@@ -16,30 +16,41 @@ public class TestBot1 extends DefaultBWListener {
     boolean flag;
     
     int frameNumber;
+    
     int[] unitID;
     int[] remainNextAttack;
+    
     int nUnitID;
+    
+    Position guessEnemy;
+    Position myBase;
     
     int getRemain(int uID)
     {
+    	nUnitID = Math.max(nUnitID, uID);
+    	return remainNextAttack[uID];
+    	/*
     	for(int i = 1; i <= nUnitID; i++)
     		if(unitID[i] == uID)
     			return remainNextAttack[i];
     	nUnitID += 1;
     	remainNextAttack[nUnitID] = 0;
     	unitID[nUnitID] = uID;
-    	return 0;
+    	return 0;*/
     }
     
-    int setRemain(int uID, int val)
+    void setRemain(int uID, int val)
     {
+    	remainNextAttack[uID] = val;
+    	nUnitID = Math.max(nUnitID, uID);
+    	/*
     	for(int i = 1; i <= nUnitID; i++)
     		if(unitID[i] == uID)
     		{
     			remainNextAttack[i] = val;
     			return i;
     		}
-    	return 0;
+    	return 0;*/
     }
     
     public void run() {
@@ -69,7 +80,7 @@ public class TestBot1 extends DefaultBWListener {
     
     @Override
     public void onStart() {
-    	unitID = new int[100001];
+    	//unitID = new int[100001];
     	remainNextAttack = new int[100001];
     	nUnitID = 0;
         game = mirror.getGame();
@@ -121,22 +132,14 @@ public class TestBot1 extends DefaultBWListener {
     @Override
     public void onFrame() {
     	
+    	int MAX_BG = 5;
+    	int MAX_WORKER = 25;
+    	
     	for(int i = 1; i <= nUnitID; i++)
     		remainNextAttack[i] = Math.max(0, remainNextAttack[i] - 1);
     	
         game.setTextSize(10);
         game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
-        
-        int cntEnemy = 0;
-        Unit em = null;
-        for (Unit u : game.getAllUnits()) {
-    		if(self.isEnemy(u.getPlayer()))
-    		{
-    			cntEnemy += 1;
-    			em = u;
-    		}
-        }
-        game.drawTextScreen(10, 70, "Em Unt = " + cntEnemy);
 
         
         
@@ -154,30 +157,37 @@ public class TestBot1 extends DefaultBWListener {
         if(SCVForFinding == null)
         	SCVForFinding = freeWorker();
         
-        if(em != null)
-        {
-        	SCVForFinding.attack(em);
-        }
         
-        
-        Position guessEnemy = null;
-        for(BaseLocation b : BWTA.getBaseLocations())
+        if(guessEnemy == null)
         {
-        	Position pb = b.getPosition();
-        	if(guessEnemy == null)
-        		guessEnemy = pb;
-        	else
-        	{
-        		if(SCVForBS.distanceTo(pb.getX(), pb.getY()) > SCVForBS.distanceTo(guessEnemy.getX(), guessEnemy.getY()))
-        		{
-        			guessEnemy = pb;
-        		}
-        	}
+	        for(BaseLocation b : BWTA.getBaseLocations())
+	        {
+	        	Position pb = b.getPosition();
+	        	if(guessEnemy == null)
+	        		guessEnemy = pb;
+	        	else
+	        	{
+	        		if(SCVForBS.distanceTo(pb.getX(), pb.getY()) > SCVForBS.distanceTo(guessEnemy.getX(), guessEnemy.getY()))
+	        		{
+	        			guessEnemy = pb;
+	        		}
+	        	}
+	        	if(myBase == null)
+	        		myBase = pb;
+	        	else
+	        	{
+	        		if(SCVForBS.distanceTo(pb.getX(), pb.getY()) < SCVForBS.distanceTo(myBase.getX(), myBase.getY()))
+	        		{
+	        			myBase = pb;
+	        		}
+	        	}
+	        	
+	        }
         }
         
         SCVForFinding.move(guessEnemy);
         
-        Position middlePoint = new Position((SCVForBS.getX() + guessEnemy.getX()) / 2, (SCVForBS.getY() + guessEnemy.getY())/ 2);
+        Position middlePoint = new Position((myBase.getX() + guessEnemy.getX()) / 2, (myBase.getY() + guessEnemy.getY())/ 2);
         game.drawLineMap(middlePoint.getX(), middlePoint.getY(), guessEnemy.getX(), guessEnemy.getY(), new Color(255,0,0));
         
         
@@ -201,7 +211,7 @@ public class TestBot1 extends DefaultBWListener {
     	
     	
     	// build BB
-    	if(population_used > 10 * 2 && self.minerals() >= 150 && countMyUnit(UnitType.Protoss_Gateway) < 4)
+    	if(population_used > 10 * 2 && self.minerals() >= 150 && countMyUnit(UnitType.Protoss_Gateway) < MAX_BG)
     	{
     		Unit selectedSCV = SCVForBB;
     		if(selectedSCV == null)
@@ -231,7 +241,7 @@ public class TestBot1 extends DefaultBWListener {
             //if there's enough minerals, train an SCV
             if (myUnit.getType() == UnitType.Protoss_Nexus && self.minerals() >= 50) {
             	if(myUnit.isTraining() == false)
-            		if(countMyUnit(UnitType.Protoss_Probe) <= 24)
+            		if(countMyUnit(UnitType.Protoss_Probe) < MAX_WORKER)
             			myUnit.train(UnitType.Protoss_Probe);
             }
             //if it's a drone and it's idle, send it to the closest mineral patch
