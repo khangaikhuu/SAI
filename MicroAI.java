@@ -71,55 +71,66 @@ public class TestBot1 extends DefaultBWListener {
         
         
         //iterate through my units
+        String delays = "";
+        
+        for (Unit allUnit : game.getAllUnits())
+        {
+        	if(allUnit.getType() == UnitType.Protoss_Pylon)
+        		continue;
+        	int HP = allUnit.getHitPoints() + allUnit.getShields();
+        	game.drawCircleMap(allUnit.getPosition().getX(), allUnit.getPosition().getY(), HP / 10, new Color(0,255,0));
+        
+        }
+        
         for (Unit myUnit : self.getUnits()) {
             
-            if(myUnit.getType() == UnitType.Protoss_Zealot)
+        	delays += "" + getRemain(myUnit.getID()) + " | ";
+        	
+            if(myUnit.getType() != UnitType.Protoss_Pylon)
             {
             	Unit atkUnt = null;
             	Position pos = new Position(10000, 10000);
-            	
-            		
+            	int minimalHP = 10000;
             	{
                 	for (Unit u : game.getAllUnits()) {
                 		
-                		if(self.isEnemy(u.getPlayer()))
+                		if(self.isEnemy(u.getPlayer()) && u.getType() != UnitType.Protoss_Pylon)
                 		{
                 			double distMeToEnemy = u.getPosition().distanceTo(myUnit.getPosition().getX(), myUnit.getPosition().getY());
                 			double distMeToPrevAtkPoint = pos.distanceTo(myUnit.getPosition().getX(), myUnit.getPosition().getY());
-                			if(distMeToEnemy < distMeToPrevAtkPoint)
+                			if(atkUnt == null || distMeToEnemy < distMeToPrevAtkPoint)
+                			//if(atkUnt == null || u.getHitPoints() + u.getShields() < minimalHP)
                 			{
-                				pos = u.getPosition();
+                				minimalHP = u.getHitPoints() + u.getShields();
                 				atkUnt = u;
+                				pos = u.getPosition();
                 			}
                 		}
                 	}
             	}
             	
-            	
-            		
-            
+
             	if(atkUnt != null)
             	{
             		if(getRemain(myUnit.getID()) == 0)
             		{
+            			
+            			if(myUnit.getOrderTarget() != null)
+            				if(myUnit.getOrderTarget().getID() == atkUnt.getID())
+	            			{
+	            				game.drawLineMap(myUnit.getPosition().getX(), myUnit.getPosition().getY(), atkUnt.getPosition().getX(), atkUnt.getPosition().getY(), new Color(0,255,0));
+	            				continue;
+	            			}
             			myUnit.attack(atkUnt);
-            			setRemain(myUnit.getID(), 10);
             			game.drawLineMap(myUnit.getPosition().getX(), myUnit.getPosition().getY(), atkUnt.getPosition().getX(), atkUnt.getPosition().getY(), new Color(255,0,0));
             		}
-            		else
-            		{
-            			game.drawLineMap(myUnit.getPosition().getX(), myUnit.getPosition().getY(), atkUnt.getPosition().getX(), atkUnt.getPosition().getY(), new Color(0,255,0));
-            		}
-            	}
-            	else
-            	{
-            		//myUnit.attack(pos);
-            		game.drawTextScreen(10, 25, "attack to pos");
             	}
             }
             
         }
         
+        
+        game.drawTextScreen(10, 125, delays);
         
         //draw my units on screen
         
