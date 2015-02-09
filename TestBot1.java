@@ -134,6 +134,7 @@ public class TestBot1 extends DefaultBWListener {
     	
     	int MAX_BG = 5;
     	int MAX_WORKER = 25;
+    	int ATTACK_ARMY = 24;
     	
     	for(int i = 1; i <= nUnitID; i++)
     		remainNextAttack[i] = Math.max(0, remainNextAttack[i] - 1);
@@ -288,9 +289,9 @@ public class TestBot1 extends DefaultBWListener {
                 	}
             	}
             	
-            	if(countMyUnit(UnitType.Protoss_Zealot) < 20 || atkUnt == null)
+            	if(countMyUnit(UnitType.Protoss_Zealot) < ATTACK_ARMY || atkUnt == null)
             	{
-	            	if(countMyUnit(UnitType.Protoss_Zealot) < 20)
+	            	if(countMyUnit(UnitType.Protoss_Zealot) < ATTACK_ARMY)
 	            		pos = middlePoint;
 	            	else
 	            		pos = guessEnemy;
