@@ -29,28 +29,12 @@ public class TestBot1 extends DefaultBWListener {
     {
     	nUnitID = Math.max(nUnitID, uID);
     	return remainNextAttack[uID];
-    	/*
-    	for(int i = 1; i <= nUnitID; i++)
-    		if(unitID[i] == uID)
-    			return remainNextAttack[i];
-    	nUnitID += 1;
-    	remainNextAttack[nUnitID] = 0;
-    	unitID[nUnitID] = uID;
-    	return 0;*/
     }
     
     void setRemain(int uID, int val)
     {
     	remainNextAttack[uID] = val;
     	nUnitID = Math.max(nUnitID, uID);
-    	/*
-    	for(int i = 1; i <= nUnitID; i++)
-    		if(unitID[i] == uID)
-    		{
-    			remainNextAttack[i] = val;
-    			return i;
-    		}
-    	return 0;*/
     }
     
     public void run() {
@@ -78,18 +62,30 @@ public class TestBot1 extends DefaultBWListener {
     	return null;
     }
     
+    int nowLookAt;
+    int nPossible;
+    Position[] possiblePosition;
+    boolean firstTime;
+    boolean enemyPosKnown;
+    boolean f1;
+    
     @Override
     public void onStart() {
-    	//unitID = new int[100001];
-    	remainNextAttack = new int[100001];
+    	f1 = true;
+    	enemyPosKnown = false;
+    	nowLookAt = 1;
+    	nPossible = 0;
+    	possiblePosition = new Position[17];
+    	firstTime = true;
+    	
+    	remainNextAttack = new int[1000001];
     	nUnitID = 0;
         game = mirror.getGame();
         self = game.self();
         flag = false;
-        //game.enableFlag(1);
+        
         game.setLocalSpeed(0);
-        //Use BWTA to analyze map
-        //This may take a few minutes if the map is processed first time!
+        
         System.out.println("Analyzing map...");
         BWTA.readMap();
         BWTA.analyze();
@@ -99,8 +95,8 @@ public class TestBot1 extends DefaultBWListener {
     public void buildNear(Unit builder, int x, int y, UnitType buildingType)
     {
 		int[] dx = {0, 1, 0, -1};
-		int[] dy = {1, 0, -1, 0};		
-		for(int d = 5; d >= 0 ; d--)
+		int[] dy = {1, 0, -1, 0};
+		for(int d = 7; d >= 0 ; d--)
 		{
 			for(int f = 0; f < 4; f++)
 			{
@@ -129,19 +125,18 @@ public class TestBot1 extends DefaultBWListener {
     	return ret;
 	}
 	
+	
+	int recordVar = -100;
+	
     @Override
     public void onFrame() {
     	
     	int MAX_BG = 5;
     	int MAX_WORKER = 25;
-    	int ATTACK_ARMY = 24;
+    	int ATTACK_ARMY = 18;
     	
     	for(int i = 1; i <= nUnitID; i++)
     		remainNextAttack[i] = Math.max(0, remainNextAttack[i] - 1);
-    	
-        game.setTextSize(10);
-        game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
-
         
         
         int population_total = self.supplyTotal();
@@ -150,29 +145,19 @@ public class TestBot1 extends DefaultBWListener {
         StringBuilder units = new StringBuilder("My units:\n");
         
         
-        // build BS
-        if(SCVForBS == null)
-        	SCVForBS = freeWorker();
-        if(SCVForBB == null)
-        	SCVForBB = freeWorker();
-        if(SCVForFinding == null)
-        	SCVForFinding = freeWorker();
         
-        
-        if(guessEnemy == null)
+        if(firstTime)
         {
-	        for(BaseLocation b : BWTA.getBaseLocations())
+        	firstTime = false;
+        	
+        	SCVForBS = freeWorker();
+        	
+	        for(BaseLocation b : BWTA.getStartLocations())
 	        {
+	        	nPossible += 1;
+	        	possiblePosition[nPossible] = b.getPosition();
+	        	
 	        	Position pb = b.getPosition();
-	        	if(guessEnemy == null)
-	        		guessEnemy = pb;
-	        	else
-	        	{
-	        		if(SCVForBS.distanceTo(pb.getX(), pb.getY()) > SCVForBS.distanceTo(guessEnemy.getX(), guessEnemy.getY()))
-	        		{
-	        			guessEnemy = pb;
-	        		}
-	        	}
 	        	if(myBase == null)
 	        		myBase = pb;
 	        	else
@@ -186,7 +171,63 @@ public class TestBot1 extends DefaultBWListener {
 	        }
         }
         
-        SCVForFinding.move(guessEnemy);
+        // build BS
+        if(SCVForBS == null || SCVForBS.distanceTo(myBase.getX(), myBase.getY()) > 10000)
+        	SCVForBS = freeWorker();
+        if(SCVForBB == null || SCVForBB.distanceTo(myBase.getX(), myBase.getY()) > 10000)
+        	SCVForBB = freeWorker();
+        if(SCVForFinding == null || SCVForFinding.distanceTo(myBase.getX(), myBase.getY()) > 10000)
+        	SCVForFinding = freeWorker();
+        
+        Position now = possiblePosition[nowLookAt];
+        Position scvP = SCVForFinding.getPosition();
+       
+        game.setTextSize(10);
+        game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace() + "nUnit = " + nUnitID);
+        
+        //game.drawLineMap(now.getX(), now.getY(), scvP.getX(), scvP.getY(), new Color(255,0,0));
+        
+        if(nowLookAt < nPossible && myBase.distanceTo(now.getX(), now.getY()) < 100)
+        	nowLookAt += 1;
+        if(nowLookAt < nPossible && SCVForFinding.getPosition().distanceTo(now.getX(), now.getY()) < 100)
+        	nowLookAt += 1;
+        
+        now = possiblePosition[nowLookAt];
+        
+        //game.drawTextScreen(10, 30, "d = " + SCVForFinding.getOrderTargetPosition().distanceTo(now.getX(), now.getY()));
+        if(enemyPosKnown == false)
+        {
+        	if(population_total > 10 * 2)
+        		if(SCVForFinding.getOrderTargetPosition().distanceTo(now.getX(), now.getY()) > 2)
+        			SCVForFinding.move(now);
+        }
+        else
+        {
+        	
+        	if(f1)
+        	{
+        		SCVForFinding.move(myBase);
+        		f1 = false;
+        	}
+        }
+        
+        if(enemyPosKnown == false)
+        {
+        	guessEnemy = now;
+        	for(Unit u : game.getAllUnits())
+        	{
+        		if(self.isEnemy(u.getPlayer()))
+        		{
+        			if(u.getType() == UnitType.Protoss_Nexus || u.getType() == UnitType.Terran_Command_Center || u.getType() == UnitType.Zerg_Hatchery)
+        			{
+        				guessEnemy = u.getPosition();
+        				enemyPosKnown = true;
+        			}
+        		}
+        	}
+        }
+        
+        
         
         Position middlePoint = new Position((myBase.getX() + guessEnemy.getX()) / 2, (myBase.getY() + guessEnemy.getY())/ 2);
         game.drawLineMap(middlePoint.getX(), middlePoint.getY(), guessEnemy.getX(), guessEnemy.getY(), new Color(255,0,0));
@@ -202,11 +243,16 @@ public class TestBot1 extends DefaultBWListener {
     		}
     		else
     		{
+    			int before = self.minerals();
 	    		TilePosition me = selectedSCV.getTilePosition();
 	    		int meX = me.getX();
 	    		int meY = me.getY();
 	    		buildNear(selectedSCV, meX, meY, UnitType.Protoss_Pylon);
 	    		game.drawTextScreen(10, 55, "Build BS!!");
+	    		
+	    		int after = self.minerals();
+    			
+    			recordVar = after - before;
     		}
     	}
     	
@@ -229,9 +275,6 @@ public class TestBot1 extends DefaultBWListener {
     	}
     	
     	
-    	
-    	String dbgStr = "";
-    	String dbgStr2 = "";
         
         //iterate through my units
         for (Unit myUnit : self.getUnits()) {
@@ -243,7 +286,11 @@ public class TestBot1 extends DefaultBWListener {
             if (myUnit.getType() == UnitType.Protoss_Nexus && self.minerals() >= 50) {
             	if(myUnit.isTraining() == false)
             		if(countMyUnit(UnitType.Protoss_Probe) < MAX_WORKER)
+            		{
+            			int before = self.minerals();
             			myUnit.train(UnitType.Protoss_Probe);
+            			int after = self.minerals();
+            		}
             }
             //if it's a drone and it's idle, send it to the closest mineral patch
             if (myUnit.getType().isWorker() && myUnit.isIdle()) {
@@ -267,20 +314,33 @@ public class TestBot1 extends DefaultBWListener {
             if(self.minerals() >= 50 && myUnit.getType() == UnitType.Protoss_Gateway && myUnit.isTraining() == false)
             	myUnit.train(UnitType.Protoss_Zealot);
             
-            if(myUnit.getType() == UnitType.Protoss_Zealot)
+            if(myUnit.getType() == UnitType.Protoss_Zealot || myUnit.getType() == UnitType.Protoss_Probe)
             {
             	Unit atkUnt = null;
             	Position pos = new Position(10000, 10000);
-            	
+            	double prevHP = 100000;
             		
             	{
                 	for (Unit u : game.getAllUnits()) {
+                		if(u.isVisible() == false)
+                			continue;
+                		if(u.getType() == UnitType.Zerg_Overlord)
+                			continue;
                 		
                 		if(self.isEnemy(u.getPlayer()))
                 		{
                 			double distMeToEnemy = u.getPosition().distanceTo(myUnit.getPosition().getX(), myUnit.getPosition().getY());
                 			double distMeToPrevAtkPoint = pos.distanceTo(myUnit.getPosition().getX(), myUnit.getPosition().getY());
-                			if(distMeToEnemy < distMeToPrevAtkPoint)
+                			/*if(distMeToPrevAtkPoint < 80)
+                			{
+                				if(u.getHitPoints() + u.getShields() < prevHP)
+                				{
+                					prevHP = u.getHitPoints() + u.getShields();
+                					pos = u.getPosition();
+                    				atkUnt = u;
+                				}
+                			}
+                			else*/ if(distMeToEnemy < distMeToPrevAtkPoint)
                 			{
                 				pos = u.getPosition();
                 				atkUnt = u;
@@ -296,12 +356,18 @@ public class TestBot1 extends DefaultBWListener {
 	            	else
 	            		pos = guessEnemy;
             	}
-            		
+            	
+            	if(atkUnt != null)
+            		if(myUnit.getType() == UnitType.Protoss_Probe && myUnit.distanceTo(atkUnt.getX(), atkUnt.getY()) > 100)
+            			continue;
+            	if(atkUnt == null && myUnit.getType() == UnitType.Protoss_Probe)
+            		continue;
+            	if(atkUnt != null && atkUnt.isAttacking() == false && myUnit.getType() == UnitType.Protoss_Probe)
+            		continue;
             
             	if(atkUnt != null)
             	{
-            		dbgStr += myUnit.getID() + " ";
-            		dbgStr2 += getRemain(myUnit.getID()) + " ";
+            		
             		if(getRemain(myUnit.getID()) == 0)
             		{
             			myUnit.attack(atkUnt);
@@ -324,8 +390,8 @@ public class TestBot1 extends DefaultBWListener {
         
         
         //draw my units on screen
-        game.drawTextScreen(10, 135, dbgStr);
-        game.drawTextScreen(10, 155, dbgStr2);
+        game.drawTextScreen(10, 135, recordVar + "");
+        //game.drawTextScreen(10, 155, dbgStr2);
         
     }
 
