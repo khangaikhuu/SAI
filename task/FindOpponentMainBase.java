@@ -13,7 +13,7 @@ import bwta.BaseLocation;
 public class FindOpponentMainBase implements Task
 {
 	Bot root;
-	
+	int Radius = 300;
 	List<Position> possiblePosition;
 	int currentFinding;
 	Unit onDutyWorker;
@@ -24,11 +24,12 @@ public class FindOpponentMainBase implements Task
 		possiblePosition = new ArrayList<Position>();
 		for(BaseLocation b : BWTA.getStartLocations())
 		{
-			if(b.getPosition().distanceTo(root.gameInfo.myFirstBase.getX(), root.gameInfo.myFirstBase.getY()) < 100)
+			if(b.getPosition().distanceTo(root.gameInfo.myFirstBase().getPosition().getX(), root.gameInfo.myFirstBase().getPosition().getY()) < 100)
 				continue;
 			possiblePosition.add(b.getPosition());
 		}
-		onDutyWorker = util.General.getNearestFreeWorker(root, root.gameInfo.myFirstBase.getPosition());
+		
+		onDutyWorker = util.General.getNearestFreeWorker(root, root.gameInfo.myFirstBase().getPosition(), Radius);
 		
 		currentFinding = 0;
 		firstFrame = true;
@@ -53,16 +54,25 @@ public class FindOpponentMainBase implements Task
 	@Override
 	public void onFrame() {
 		
-		//TODO: what if this worker died before finding?
+		if(onDutyWorker == null || util.General.isAlive(root, onDutyWorker) == false)
+		{
+			onDutyWorker = util.General.getNearestFreeWorker(root, root.gameInfo.myFirstBase().getPosition(), Radius);
+		}
+		
+		if(onDutyWorker == null || util.General.isAlive(root, onDutyWorker) == false)
+			return;
 		
 		root.debug.addDebugInfo("\t+PossiblePositions = " + possiblePosition.size());
 		if(firstFrame)
 		{
 			firstFrame = false;
-			root.gameInfo.unitOnDuty[onDutyWorker.getID()] = true;
-			onDutyWorker.move(possiblePosition.get(currentFinding));
+			if(util.General.isAlive(root, onDutyWorker))
+			{
+				root.gameInfo.unitOnDuty[onDutyWorker.getID()] = true;
+				onDutyWorker.move(possiblePosition.get(currentFinding));
+			}
 		}
-		if(onDutyWorker.getPosition().distanceTo(root.gameInfo.myFirstBase.getPosition().getX(), root.gameInfo.myFirstBase.getPosition().getY()) < 100)
+		if(onDutyWorker.getPosition().distanceTo(root.gameInfo.myFirstBase().getPosition().getX(), root.gameInfo.myFirstBase().getPosition().getY()) < 100)
 			onDutyWorker.move(possiblePosition.get(currentFinding));
 		
 		for(Unit u : root.game.getAllUnits())
@@ -89,8 +99,10 @@ public class FindOpponentMainBase implements Task
 	public boolean isFinished() {
 		if(root.gameInfo.opponentMainBase != null)
 		{
+			if(onDutyWorker == null || util.General.isAlive(root, onDutyWorker) == false)
+				return true;
 			root.gameInfo.unitOnDuty[onDutyWorker.getID()] = false;
-			onDutyWorker.move(root.gameInfo.myFirstBase.getPosition());
+			onDutyWorker.move(root.gameInfo.myFirstBase().getPosition());
 			return true;
 		}
 		return false;

@@ -16,27 +16,23 @@ public class TechBuildingPlanner implements Component
 	{
 		root = r;
 		
-		buildingOrder_type = new UnitType[]{UnitType.Protoss_Assimilator, 
+		buildingOrder_type = new UnitType[]{
+											UnitType.Protoss_Nexus, 
+											UnitType.Protoss_Assimilator,
 											UnitType.Protoss_Gateway,
+											UnitType.Protoss_Forge,
 											UnitType.Protoss_Cybernetics_Core,
-											UnitType.Protoss_Citadel_of_Adun,
-											UnitType.Protoss_Gateway,
-											UnitType.Protoss_Templar_Archives,
-											UnitType.Protoss_Gateway,
-											UnitType.Protoss_Gateway,
-											UnitType.Protoss_Pylon,
-											UnitType.Protoss_Gateway,
+											UnitType.Protoss_Stargate,
+											UnitType.Protoss_Fleet_Beacon
 											};
-		buildingOrder_condition = new int[]{10,
-											12,
+		buildingOrder_condition = new int[]{15,
 											15,
-											17,
+											16,
+											16,
 											18,
-											20,
-											23,
-											25,
-											28,
-											33};
+											21,
+											23
+											};
 		p = 0;
 	}
 	
@@ -52,11 +48,50 @@ public class TechBuildingPlanner implements Component
 		{
 			if(populationCount >= buildingOrder_condition[p])
 			{
-				task.ScheduleBuilding t = new task.ScheduleBuilding(root, buildingOrder_type[p]);
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, buildingOrder_type[p], root.gameInfo.myBase.get(0));
 				root.currentTasks.add(t);
 				p ++;
 			}
+		}
+		
+		if(util.General.isNotBeginning(root))
+		{
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Stargate) < util.General.countBuilding(root, UnitType.Protoss_Nexus) * 2 && root.frameInfo.remainMinerals > 300 && root.frameInfo.remainGas > 200)
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Stargate, root.gameInfo.myBase.get(0));
+				root.currentTasks.add(t);
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Stargate.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Stargate.gasPrice();
+			}
+
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 2 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 50 * 2))
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
+				root.currentTasks.add(t);
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
+			}
+			
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 3 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 100 * 2))
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
+				root.currentTasks.add(t);
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
+			}
+			
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 4 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 130 * 2))
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
+				root.currentTasks.add(t);
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
+			}
+			
+			
 			
 		}
+		
+		
 	}
 }

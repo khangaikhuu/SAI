@@ -5,7 +5,8 @@ import java.util.List;
 
 public class Debug {
 	
-	main.Bot root;
+	public static main.Bot root;
+	public long debugLong;
 	
 	public Debug(main.Bot r) {
 		root = r;

@@ -23,13 +23,20 @@ public class BaseManager implements Component
 		
 		for(Unit u : root.self.getUnits())
 		{
-			if(util.General.isBase(u))
+			if(util.General.isBase(u) && u.isBeingConstructed() == false)
 			{
+				boolean haveMineral = false;
+                for (Unit neutralUnit : root.game.neutral().getUnits()) {
+                    if (neutralUnit.getType().isMineralField() && neutralUnit.getPosition().getDistance(u.getPosition()) < Radius)
+                    {
+                    	haveMineral = true;
+                    }
+                }
+				if(!haveMineral)
+					continue;
 				BaseInfo b = new BaseInfo();
 				b.base = u;
 				root.gameInfo.myBase.add(b);
-				if(root.gameInfo.myFirstBase == null)
-					root.gameInfo.myFirstBase = u;
 			}
 		}
 		
@@ -74,12 +81,10 @@ public class BaseManager implements Component
 			cx -= mx;
 			cy -= my;
 			float r = (float) Math.sqrt(cx * cx + cy * cy);
-			cx *= - (10 * 32 / r);
-			cy *= - (10 * 32 / r);
-			
-			root.game.drawCircleMap((int)(cx + mx), (int)(cy + my), 20, new Color(255, 0, 0));
+			cx *= - (7 * 32 / r);
+			cy *= - (7 * 32 / r);
 			b.buildingArea = new Position((int)(cx + mx), (int)(cy + my));
-			
+			root.game.drawCircleMap(b.buildingArea.getX(), b.buildingArea.getY(), 20, new Color(255, 0, 0));
 		}
 	}
 
@@ -89,8 +94,19 @@ public class BaseManager implements Component
 		calculateBaseInfo();
 		
 		int baseNumber = 0;
+		
+		
 		for(BaseInfo b : root.gameInfo.myBase)
 		{
+			//TODO : do not use unitOnDuty, create a new one.
+			if(root.gameInfo.unitOnDuty[b.base.getID()] == false && b.gasStation.size() == 0 && util.General.isNotBeginning(root) == true)
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Assimilator, b);
+				root.currentTasks.add(t);
+				root.gameInfo.unitOnDuty[b.base.getID()] = true;
+			}
+			
+			
 			
 			root.game.drawCircleMap(b.buildingArea.getX(), b.buildingArea.getY(), Radius, new Color(0, 0, 255));
 			
@@ -101,7 +117,7 @@ public class BaseManager implements Component
 			int countGasWorker = 0;
 			for(Unit u : b.worker)
 			{
-				if(u.isGatheringGas())
+				if(u.isGatheringGas() && u.isIdle() == false && util.General.isAlive(root, u))
 					countGasWorker += 1;
 			}
 			
@@ -128,21 +144,49 @@ public class BaseManager implements Component
 	                    u.gather(closestMineral, false);
 	                }
 				}
-				
-				//TODO: what if some gas-worker died.
-				if(root.gameInfo.unitOnDuty[u.getID()] == false && b.gasStation.size() > 0 && countGasWorker < 3)
-				{
-					u.gather(b.gasStation.get(0));
-					countGasWorker += 1;
-				}
-				
 			}
+			
+			while(b.gasStation.size() > 0 && countGasWorker < 3 && b.worker.size() > 5)
+			{
+				Unit u = util.General.getNearestFreeWorker(root, b.base.getPosition(), Radius);
+				if(u == null)
+					break;
+				Unit station = b.gasStation.get(0);
+				if(station == null)
+					break;
+				u.gather(station);
+				countGasWorker += 1;
+			}
+			
 			root.debug.addDebugInfo("	+Base #" + baseNumber + ": worker(Minerals/Gas/All) = " + cntGatheringMinerals + " / " + cntGatheringGas + " / " + b.worker.size());
 			if(b.base.isTraining() == false && root.frameInfo.remainMinerals >= 50 && b.worker.size() < 25)
 			{
 				b.base.train(UnitType.Protoss_Probe);
 			}
+			
+			if(baseNumber > 1)
+			{
+				if(util.General.isNotBeginning(root) && util.General.countBuildingIncludeScheduledInRange(root, UnitType.Protoss_Pylon, b.base.getPosition(), Radius) == 0)
+				{
+					task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Pylon, b);
+					root.currentTasks.add(t);
+				}
+				else if(util.General.isNotBeginning(root) && util.General.countBuildingInRange(root, UnitType.Protoss_Pylon, b.base.getPosition(), Radius) > 0 && util.General.countBuildingIncludeScheduledInRange(root, UnitType.Protoss_Photon_Cannon, b.base.getPosition(), Radius) < 6)
+				{
+					task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Photon_Cannon, b);
+					root.currentTasks.add(t);
+				}
+			}
 		}
+		
+		for(Unit u : root.self.getUnits())
+		{
+			if(util.General.isWorker(u) && u.isIdle())
+				u.move(root.gameInfo.myBase.get(root.gameInfo.myBase.size()-1).base.getPosition());
+		}
+		
+		
+		
 	}
 
 	@Override

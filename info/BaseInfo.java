@@ -12,6 +12,7 @@ public class BaseInfo
 	public List <Unit> worker;
 	public List <Unit> gasStation;
 	public Position buildingArea;
+	public boolean scheduledGasStation;
 	
 	public BaseInfo() {
 		worker = new ArrayList<Unit>();

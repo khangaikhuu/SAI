@@ -59,13 +59,21 @@ public class Bot extends DefaultBWListener {
         components.add(new component.TechBuildingPlanner(this));
         components.add(new component.ArmyProductionManager(this));
         components.add(new component.ArmyCommander(this));
+        components.add(new component.UpgradeManager(this));
     }
     
     @Override
     public void onFrame() {
     	
+    	util.Debug.root = this;
+    	util.General.root = this;
+    	
+    	long frameStart = System.nanoTime();
+    	
         debug.debugInfo.clear();
+        debug.debugLong = 0;
         debug.addDebugInfo("Frame #" + frameInfo.frameNumber + "");
+        
         frameInfo.onFrameInit();
         List <Task> remainTasks = new ArrayList<Task>();
         for(Task t : currentTasks)
@@ -78,12 +86,20 @@ public class Bot extends DefaultBWListener {
         }
         currentTasks = remainTasks;
         
+        
+        long [] timeUseage = new long[components.size()];
+        long total = 0;
+        
         int componentID = 0;
         for (Component comp : components)
         {
+        	long prev = System.nanoTime();
         	componentID += 1;
         	debug.addDebugInfo("[Component #" + componentID + ": " + comp.getComponentName() + "]");
         	comp.onFrame();
+        	long now = System.nanoTime();
+        	total += now - prev;
+        	timeUseage[componentID - 1] = now - prev;
         }
         
         int taskID = 0;
@@ -94,7 +110,28 @@ public class Bot extends DefaultBWListener {
         	t.onFrame();
         }
         
+        String timePercents = "[";
+        for(int i = 0; i < components.size(); i++)
+        {
+        	if(timeUseage[i] * 100 / total < 10)
+        		timePercents += "0";
+        	timePercents += "" + (timeUseage[i] * 100 / total) + " | ";
+        }
+        timePercents += "]";
+        debug.addDebugInfo(timePercents);
+        
+        long frameUses = System.nanoTime() - frameStart;
+        String utilUseage = "" + (debug.debugLong * 100 / frameUses);
+        debug.addDebugInfo(debug.debugLong + " / " + frameUses + " = " + utilUseage);
+        String fps = "" + (1000000000 / frameUses);
+        debug.addDebugInfo(fps + " FPS.");
         debug.outputDebugInfoToScreen();
+        
+        
+        
+        game.drawCircleMap(util.General.getNextBasePosition(this).getX(), util.General.getNextBasePosition(this).getY(), 100, new Color(0, 255, 0));
+        game.drawLineMap(util.General.getNextBasePosition(this).getX(), util.General.getNextBasePosition(this).getY(), gameInfo.myFirstBase().getX(), gameInfo.myFirstBase().getY(), new Color(255, 255, 0));
+        
     }
 
     public static void main(String[] args) {

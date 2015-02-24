@@ -38,6 +38,9 @@ public class Reconnoiter implements Component
 		if(root.gameInfo.opponentMainBase != null)
 			root.game.drawCircleMap(root.gameInfo.opponentMainBase.getX(), root.gameInfo.opponentMainBase.getY(), 100, new Color(255, 0, 0));
 		
+		
+		
+		
 	}
 	
 }
