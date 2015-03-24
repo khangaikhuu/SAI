@@ -29,17 +29,21 @@ public class UpgradeManager implements Component
 					u.upgrade(UpgradeType.Carrier_Capacity);
 				}
 			}
-			if(u.getType() == UnitType.Protoss_Cybernetics_Core && root.self.isUpgrading(UpgradeType.Protoss_Air_Weapons) == false)
+			if(u.getType() == UnitType.Protoss_Cybernetics_Core && root.self.isUpgrading(UpgradeType.Singularity_Charge) == false)
 			{
 				if(u.isUpgrading() == false)
 				{
-					u.upgrade(UpgradeType.Protoss_Air_Weapons);
+					u.upgrade(UpgradeType.Singularity_Charge);
 				}
 			}
-			
+			if(u.getType() == UnitType.Protoss_Citadel_of_Adun && root.self.isUpgrading(UpgradeType.Leg_Enhancements) == false)
+			{
+				if(u.isUpgrading() == false)
+				{
+					u.upgrade(UpgradeType.Leg_Enhancements);
+				}
+			}
 		}
-		
-		
 	}
 	
 }

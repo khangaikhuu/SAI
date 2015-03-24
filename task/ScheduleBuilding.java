@@ -51,7 +51,11 @@ public class ScheduleBuilding implements Task
 	public void onFrame() {
 		
 		if(onDutyWorkUnit == null || util.General.isAlive(root, onDutyWorkUnit) == false)
+		{
 			onDutyWorkUnit = util.General.getNearestFreeWorker(root, base.base.getPosition(), Radius);
+			if(onDutyWorkUnit != null)
+				root.gameInfo.unitOnDuty[onDutyWorkUnit.getID()] = true;
+		}
 		
 		if(onDutyWorkUnit == null || util.General.isAlive(root, onDutyWorkUnit) == false)
 			return;
@@ -71,7 +75,6 @@ public class ScheduleBuilding implements Task
 		
 		if(root.frameInfo.frameNumber - lastTry > 400 || (root.frameInfo.frameNumber - lastTry > 10 && (onDutyWorkUnit.isIdle() || onDutyWorkUnit.isGatheringMinerals() || onDutyWorkUnit.isGatheringGas())))
 		{
-			// TODO: other race
 			if(buildingType == UnitType.Protoss_Nexus)
 				scheduledPosition = util.General.buildNear(onDutyWorkUnit, util.General.getNextBasePosition(root), buildingType);
 			else if(util.General.isGasBuilding(buildingType) || buildingType == UnitType.Protoss_Photon_Cannon)

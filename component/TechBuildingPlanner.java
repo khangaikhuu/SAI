@@ -17,21 +17,19 @@ public class TechBuildingPlanner implements Component
 		root = r;
 		
 		buildingOrder_type = new UnitType[]{
-											UnitType.Protoss_Nexus, 
-											UnitType.Protoss_Assimilator,
 											UnitType.Protoss_Gateway,
-											UnitType.Protoss_Forge,
+											UnitType.Protoss_Assimilator,
 											UnitType.Protoss_Cybernetics_Core,
-											UnitType.Protoss_Stargate,
-											UnitType.Protoss_Fleet_Beacon
+											UnitType.Protoss_Gateway,
+											UnitType.Protoss_Citadel_of_Adun,
+											UnitType.Protoss_Templar_Archives,
 											};
-		buildingOrder_condition = new int[]{15,
+		buildingOrder_condition = new int[]{12,
+											12,
 											15,
 											16,
-											16,
-											18,
-											21,
-											23
+											50,
+											80,
 											};
 		p = 0;
 	}
@@ -56,42 +54,38 @@ public class TechBuildingPlanner implements Component
 		
 		if(util.General.isNotBeginning(root))
 		{
-			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Stargate) < util.General.countBuilding(root, UnitType.Protoss_Nexus) * 2 && root.frameInfo.remainMinerals > 300 && root.frameInfo.remainGas > 200)
+			if(util.General.countBuilding(root, UnitType.Protoss_Gateway)  < 3 * root.gameInfo.myBase.size() &&  (root.frameInfo.remainMinerals > 150))
 			{
-				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Stargate, root.gameInfo.myBase.get(0));
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Gateway, root.gameInfo.myBase.get(root.gameInfo.myBase.size()-1));
 				root.currentTasks.add(t);
-				root.frameInfo.remainMinerals -= UnitType.Protoss_Stargate.mineralPrice();
-				root.frameInfo.remainGas -= UnitType.Protoss_Stargate.gasPrice();
-			}
-
-			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 2 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 50 * 2))
-			{
-				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
-				root.currentTasks.add(t);
-				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
-				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Gateway.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Gateway.gasPrice();
 			}
 			
-			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 3 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 100 * 2))
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 2 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 45 * 2))
 			{
-				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(root.gameInfo.myBase.size()-1));
 				root.currentTasks.add(t);
 				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
 				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
 			}
 			
-			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 4 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 130 * 2))
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 3 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 85 * 2))
 			{
-				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(0));
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(root.gameInfo.myBase.size()-1));
 				root.currentTasks.add(t);
 				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
 				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
 			}
 			
-			
-			
+			if(util.General.countBuildingIncludeScheduled(root, UnitType.Protoss_Nexus) < 4 && (root.frameInfo.remainMinerals > 600 || root.self.supplyUsed() > 105 * 2))
+			{
+				task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Nexus, root.gameInfo.myBase.get(root.gameInfo.myBase.size()-1));
+				root.currentTasks.add(t);
+				root.frameInfo.remainMinerals -= UnitType.Protoss_Nexus.mineralPrice();
+				root.frameInfo.remainGas -= UnitType.Protoss_Nexus.gasPrice();
+			}
 		}
-		
 		
 	}
 }

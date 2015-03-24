@@ -13,9 +13,11 @@ public class BaseManager implements Component
 	Bot root;
 	
 	int Radius = 300;
+	int lastWorkerBalancingTime;
 	
 	public BaseManager(Bot r) {
 		root = r;
+		lastWorkerBalancingTime = 0;
 	}
 	
 	void calculateBaseInfo() {
@@ -87,11 +89,20 @@ public class BaseManager implements Component
 			root.game.drawCircleMap(b.buildingArea.getX(), b.buildingArea.getY(), 20, new Color(255, 0, 0));
 		}
 	}
+	
+	
+	
+	void workerBalancing() {
+		
+
+	}
 
 	@Override
 	public void onFrame() {
 		
 		calculateBaseInfo();
+		
+		workerBalancing();
 		
 		int baseNumber = 0;
 		
@@ -171,11 +182,11 @@ public class BaseManager implements Component
 					task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Pylon, b);
 					root.currentTasks.add(t);
 				}
-				else if(util.General.isNotBeginning(root) && util.General.countBuildingInRange(root, UnitType.Protoss_Pylon, b.base.getPosition(), Radius) > 0 && util.General.countBuildingIncludeScheduledInRange(root, UnitType.Protoss_Photon_Cannon, b.base.getPosition(), Radius) < 6)
+				/*else if(util.General.isNotBeginning(root) && util.General.countBuildingInRange(root, UnitType.Protoss_Pylon, b.base.getPosition(), Radius) > 0 && util.General.countBuildingIncludeScheduledInRange(root, UnitType.Protoss_Photon_Cannon, b.base.getPosition(), Radius) < 6)
 				{
 					task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Photon_Cannon, b);
 					root.currentTasks.add(t);
-				}
+				}*/
 			}
 		}
 		

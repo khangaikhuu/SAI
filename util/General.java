@@ -36,6 +36,23 @@ public class General {
 		return ret;
 	}
 
+	static public int countBuildingOnlyScheduled(Bot root, UnitType type)
+	{
+		long prev = System.nanoTime();
+		
+		int ret = 0;
+		
+		for(Task t : root.currentTasks)
+		{
+			if(t.getTaskName().equals("ScheduleBuilding " + type))
+				ret ++;
+		}
+		
+		root.debug.debugLong += System.nanoTime() - prev;
+		
+		return ret;
+	}
+	
 	static public int countBuildingIncludeScheduledInRange(Bot root, UnitType type, Position p, int r)
 	{
 		long prev = System.nanoTime();
@@ -141,6 +158,7 @@ public class General {
     	if(u.getType() == UnitType.Protoss_Dragoon) return true;
     	if(u.getType() == UnitType.Protoss_Dark_Templar) return true;
     	if(u.getType() == UnitType.Protoss_Carrier) return true;
+    	if(u.getType() == UnitType.Protoss_Observer) return true;
     	return false;
     }
     

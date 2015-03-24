@@ -34,9 +34,16 @@ public class SupplyManager implements Component
 				scheduledSupply += 8 * 2;
 		}
 		int limit = (currentSupply + buildingSupply + scheduledSupply);
-		limit = limit * 8 / 10;
+		if(limit < 20)
+			limit = limit - 2;
+		else if(limit < 40)
+			limit = limit - 5;
+		else {
+			limit = limit * 6 / 7;
+		}
+			 
 			
-		if(usedSupply >= limit && limit < 200 * 2)
+		if(usedSupply >= limit && (currentSupply + buildingSupply + scheduledSupply) < 200 * 2)
 		{
 			task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Pylon, root.gameInfo.myBase.get(root.gameInfo.myBase.size() - 1));
 			root.currentTasks.add(t);

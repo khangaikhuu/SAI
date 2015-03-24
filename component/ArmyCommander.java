@@ -13,10 +13,12 @@ public class ArmyCommander implements Component
 {
 
 	Bot root;
+	boolean attack;
 	
 	public ArmyCommander(Bot r)
 	{
 		root = r;
+		attack = false;
 	}
 	
 	@Override
@@ -59,6 +61,16 @@ public class ArmyCommander implements Component
 			}
 			
 			
+			if(attack == false)
+			{
+				if(root.self.visibleUnitCount(UnitType.Protoss_Dragoon) + root.self.visibleUnitCount(UnitType.Protoss_Zealot) + root.self.visibleUnitCount(UnitType.Protoss_Dark_Templar) > 25)
+					attack = true;
+			}
+			else
+			{
+				if(root.self.visibleUnitCount(UnitType.Protoss_Dragoon) + root.self.visibleUnitCount(UnitType.Protoss_Zealot) + root.self.visibleUnitCount(UnitType.Protoss_Dark_Templar) > 10)
+					attack = false;
+			}
 			
 			
 			if(util.General.isBattleUnit(u) || (u.getType() == UnitType.Protoss_Probe &&  u.isUnderAttack()))
@@ -71,7 +83,7 @@ public class ArmyCommander implements Component
 					
 					if(enemy.size() == 0)
 					{
-						if(root.self.completedUnitCount(UnitType.Protoss_Carrier) < 6)
+						if(!attack)
 							continue;
 						
 						Position attackPosition = null;
@@ -90,7 +102,7 @@ public class ArmyCommander implements Component
 						double maxScore = getScore(target.getDistance(u.getPosition()), target.getType().isDetector());
 						for(Unit v : enemy)
 						{
-							if(v.getType().isFlyingBuilding()) continue;
+							if(v.getType().isFlyingBuilding() && u.getType() != UnitType.Protoss_Dragoon) continue;
 							if(v.isCloaked()) continue;
 							if(getScore(v.getPosition().getDistance(u.getPosition()), v.getType().isDetector()) > maxScore)
 							{
@@ -99,10 +111,9 @@ public class ArmyCommander implements Component
 							}
 						}
 						
-						if(util.General.distanceToMyBase(root, target.getPosition()) > 500)
-							if(root.self.completedUnitCount(UnitType.Protoss_Carrier) < 6)
+						if(util.General.distanceToMyBase(root, target.getPosition()) > 1000)
+							if(!attack)
 								continue;
-						
 						
 						u.attack(target);
 					}

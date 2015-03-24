@@ -2,6 +2,8 @@ package main;
 import bwapi.*;
 import bwta.BWTA;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import task.Task;
@@ -118,11 +120,11 @@ public class Bot extends DefaultBWListener {
         	timePercents += "" + (timeUseage[i] * 100 / total) + " | ";
         }
         timePercents += "]";
-        debug.addDebugInfo(timePercents);
+        //debug.addDebugInfo(timePercents);
         
         long frameUses = System.nanoTime() - frameStart;
         String utilUseage = "" + (debug.debugLong * 100 / frameUses);
-        debug.addDebugInfo(debug.debugLong + " / " + frameUses + " = " + utilUseage);
+        //debug.addDebugInfo(debug.debugLong + " / " + frameUses + " = " + utilUseage);
         String fps = "" + (1000000000 / frameUses);
         debug.addDebugInfo(fps + " FPS.");
         debug.outputDebugInfoToScreen();
@@ -135,6 +137,20 @@ public class Bot extends DefaultBWListener {
     }
 
     public static void main(String[] args) {
-        new Bot().run();
+    	try{
+    		new Bot().run();
+    	}
+    	catch(Exception e)
+    	{
+    		
+    		try{
+    			PrintWriter writer = new PrintWriter("../write/exception" + (new Date(System.currentTimeMillis())).toString().replace(' ', '_').replace(':', '_') +  ".txt");
+    			e.printStackTrace(writer);
+    			writer.close();
+    		} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    	}
     }
 }

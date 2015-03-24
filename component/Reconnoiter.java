@@ -24,7 +24,7 @@ public class Reconnoiter implements Component
 	public void onFrame() {
 		if(root.gameInfo.opponentMainBase == null)
 		{
-			if(alreadyFindingOpponents == false && root.self.supplyUsed() >= 9 * 2)
+			if(alreadyFindingOpponents == false && root.self.supplyUsed() >= 11 * 2)
 			{
 				alreadyFindingOpponents = true;
 				FindOpponentMainBase t = new FindOpponentMainBase(root);
