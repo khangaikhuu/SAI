@@ -1,55 +1,72 @@
 package component;
 
-import main.Bot;
+import task.BuildStruct;
 import task.Task;
 import bwapi.Unit;
 import bwapi.UnitType;
+import main.Bot;
 
-public class SupplyManager implements Component
-{
-	Bot root;
-	
+public class SupplyManager extends Component {
+
 	public SupplyManager(Bot r) {
-		root = r;
+		super(r);
 	}
-	
+
 	@Override
-	public String getComponentName() {
+	public int getResourcePriority() {
+		return 400;
+	}
+
+	@Override
+	public String getName() {
 		return "SupplyManager";
 	}
-	
+
 	@Override
 	public void onFrame() {
+		
 		int usedSupply = root.self.supplyUsed();
-		int currentSupply = root.self.supplyTotal();
-		int buildingSupply = 0, scheduledSupply = 0;
-		for(Unit u : root.self.getUnits())
+		int haveSupply = root.self.supplyTotal();
+		for(Task t : root.listOfTasks)
 		{
-			if(u.getType() == UnitType.Protoss_Pylon && u.isBeingConstructed())
-				buildingSupply += 8 * 2;
+			usedSupply += t.needSupply();
+			haveSupply += t.provideSupply();
 		}
-		for(Task t : root.currentTasks)
+		if(root.info.myUnits.get(UnitType.Protoss_Pylon) != null)
+			for(Unit u : root.info.myUnits.get(UnitType.Protoss_Pylon))
+				if(u.isBeingConstructed())
+					haveSupply += u.getType().supplyProvided();
+		
+		if(root.info.myUnits.get(UnitType.Protoss_Gateway) != null)
+			for(Unit u : root.info.myUnits.get(UnitType.Protoss_Gateway))
+				if(u.isBeingConstructed() == false)
+					usedSupply += 2;
+		
+		
+		
+		boolean needNewSupply = false;
+		if(haveSupply <= 10 * 2)
+			needNewSupply = (haveSupply - usedSupply <= 2 * 2);
+		else if(haveSupply <= 20 * 2)
+			needNewSupply = (haveSupply - usedSupply <= 2 * 2);
+		else if(haveSupply <= 30 * 2)
+			needNewSupply = (haveSupply - usedSupply <= 4 * 2);
+		else
+			needNewSupply = (haveSupply - usedSupply <= 8 * 2);
+		
+		if(haveSupply >= 200 * 2)
+			needNewSupply = false;
+		
+		
+		root.guiManager.addDebugInfo((usedSupply/2) + "/" + (haveSupply/2) + " -> " + needNewSupply);
+		
+		if(needNewSupply)
 		{
-			if(t.getTaskName().equals("ScheduleBuilding " + UnitType.Protoss_Pylon))
-				scheduledSupply += 8 * 2;
-		}
-		int limit = (currentSupply + buildingSupply + scheduledSupply);
-		if(limit < 20)
-			limit = limit - 2;
-		else if(limit < 40)
-			limit = limit - 5;
-		else {
-			limit = limit * 6 / 7;
-		}
-			 
-			
-		if(usedSupply >= limit && (currentSupply + buildingSupply + scheduledSupply) < 200 * 2)
-		{
-			task.ScheduleBuilding t = new task.ScheduleBuilding(root, UnitType.Protoss_Pylon, root.gameInfo.myBase.get(root.gameInfo.myBase.size() - 1));
-			root.currentTasks.add(t);
+			BuildStruct task = new BuildStruct(root, root.info.bases[0], UnitType.Protoss_Pylon);
+			makeProposal(task);
 		}
 		
-		root.debug.addDebugInfo("\t+Suppy(used/now/build/task) = " + (usedSupply/2) + " / " + (currentSupply/2) + " / " + (buildingSupply/2) + " / " + (scheduledSupply/2) );
+		
 	}
-	
+
 }

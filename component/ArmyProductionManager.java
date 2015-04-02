@@ -1,85 +1,86 @@
 package component;
 
-import main.Bot;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import task.TrainUnit;
 import bwapi.Unit;
 import bwapi.UnitType;
+import main.Bot;
 
-public class ArmyProductionManager implements Component
-{
-	Bot root;
-	
+public class ArmyProductionManager extends Component {
+
 	public ArmyProductionManager(Bot r) {
-		root = r;
+		super(r);
 	}
 	
 	@Override
-	public String getComponentName() {
+	public int getResourcePriority() {
+		return 100;
+	}
+	
+	@Override
+	public String getName() {
 		return "ArmyProductionManager";
 	}
 	
 	@Override
 	public void onFrame() {
 		
-		for(Unit u : root.self.getUnits())
+		//root.goal.setGoal(UnitType.Protoss_Gateway, 2);
+		//root.goal.setGoal(UnitType.Protoss_Robotics_Facility, 2);
+		//root.goal.setGoal(UnitType.Protoss_Stargate, 2);
+		
+		List <Unit> freeGateway = new ArrayList<Unit>();
+		List <Unit> freeRoboticsFacility = new ArrayList<Unit>();
+		List <Unit> freeStargate = new ArrayList<Unit>();
+		HashMap<UnitType, List<Unit>> freeBuilding = new HashMap<UnitType, List<Unit>>();
+		freeBuilding.put(UnitType.Protoss_Gateway, freeGateway);
+		freeBuilding.put(UnitType.Protoss_Robotics_Facility, freeRoboticsFacility);
+		freeBuilding.put(UnitType.Protoss_Stargate, freeStargate);
+		
+		for(Unit u : root.info.getMyUnitsByType(UnitType.Protoss_Gateway))
+			if(root.info.canStartNewTask(u))
+				freeGateway.add(u);
+		for(Unit u : root.info.getMyUnitsByType(UnitType.Protoss_Robotics_Facility))
+			if(root.info.canStartNewTask(u))
+				freeRoboticsFacility.add(u);
+		for(Unit u : root.info.getMyUnitsByType(UnitType.Protoss_Stargate))
+			if(root.info.canStartNewTask(u))
+				freeStargate.add(u);
+		
+		
+		// deal with 'require'
+		//for(UnitType ut : root.goal.armyUnit)
+		//	root.goal.setGoal(ut);
+		
+		for(UnitType ut : root.goal.armyUnit)
 		{
-			int myZealot = root.self.visibleUnitCount(UnitType.Protoss_Zealot);
-			int myDragoon = root.self.visibleUnitCount(UnitType.Protoss_Dragoon);
+			if(root.goal.getBuilding(ut) == null)
+				continue;
+			if(root.goal.finishAllPrerequests(ut) == false)
+				continue;
+			int need = root.goal.getGoal(ut) - root.util.countUnit(ut, true, true, true);
+			if(need <= 0)
+				continue;
+			List<Unit> buildings = freeBuilding.get(root.goal.getBuilding(ut));
 			
-			/*if(u.getType() == UnitType.Protoss_Gateway && u.isTraining() == false && root.frameInfo.remainGas > 300)
-			{
-				if(root.frameInfo.remainMinerals >= UnitType.Protoss_Dark_Templar.mineralPrice() && root.frameInfo.remainGas >= UnitType.Protoss_Dark_Templar.gasPrice())
-				{
-					u.train(UnitType.Protoss_Dark_Templar);
-					root.frameInfo.remainMinerals -= UnitType.Protoss_Dark_Templar.mineralPrice();
-					root.frameInfo.remainGas -= UnitType.Protoss_Dark_Templar.gasPrice();
-				}
-			}*/
+			//System.out.println(ut + " needs " + need + " .. haveFreeBuildiing = " + freeGateway.size());
 			
-			if(u.getType() == UnitType.Protoss_Gateway && u.isTraining() == false && (myZealot > myDragoon - 1 || root.frameInfo.remainGas > 300))
+			for(int i = 0; i < need; i++)
 			{
-				if(root.frameInfo.remainMinerals >= UnitType.Protoss_Dragoon.mineralPrice() && root.frameInfo.remainGas >= UnitType.Protoss_Dragoon.gasPrice())
-				{
-					u.train(UnitType.Protoss_Dragoon);
-					root.frameInfo.remainMinerals -= UnitType.Protoss_Dragoon.mineralPrice();
-					root.frameInfo.remainGas -= UnitType.Protoss_Dragoon.gasPrice();
-				}
+				if(buildings.size() == 0)
+					break;
+				Unit b = buildings.get(buildings.size()-1);
+				TrainUnit task = new TrainUnit(root, b, ut);
+				//System.out.println("buingds = " + buildings.size());
+				if(makeProposal(task))
+					buildings.remove(buildings.size()-1);
 			}
-			
-			if(u.getType() == UnitType.Protoss_Gateway && u.isTraining() == false && myDragoon > myZealot - 1)
-			{
-				if(root.frameInfo.remainMinerals >= UnitType.Protoss_Zealot.mineralPrice() && root.frameInfo.remainGas >= UnitType.Protoss_Zealot.gasPrice())
-				{
-					u.train(UnitType.Protoss_Zealot);
-					root.frameInfo.remainMinerals -= UnitType.Protoss_Zealot.mineralPrice();
-					root.frameInfo.remainGas -= UnitType.Protoss_Zealot.gasPrice();
-				}
-			}
-			
-
-
-
-			if(u.getType() == UnitType.Protoss_Robotics_Facility && u.isTraining() == false)
-			{
-				if(root.frameInfo.remainMinerals >= UnitType.Protoss_Observer.mineralPrice() && root.frameInfo.remainGas >= UnitType.Protoss_Observer.gasPrice() && root.self.visibleUnitCount(UnitType.Protoss_Observer) < 2)
-				{
-					u.train(UnitType.Protoss_Observer);
-					root.frameInfo.remainMinerals -= UnitType.Protoss_Dragoon.mineralPrice();
-					root.frameInfo.remainGas -= UnitType.Protoss_Dragoon.gasPrice();
-				}
-			}
-			
-			if(u.getType() == UnitType.Protoss_Stargate && u.isTraining() == false)
-			{
-				
-				if(root.frameInfo.remainMinerals >= UnitType.Protoss_Carrier.mineralPrice() && root.frameInfo.remainGas >= UnitType.Protoss_Carrier.gasPrice())
-				{
-					u.train(UnitType.Protoss_Carrier);
-					root.frameInfo.remainMinerals -= UnitType.Protoss_Carrier.mineralPrice();
-					root.frameInfo.remainGas -= UnitType.Protoss_Carrier.gasPrice();
-				}
-			}
-			
-			
 		}
-	}	
+		
+		
+	}
+
 }

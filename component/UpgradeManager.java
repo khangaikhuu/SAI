@@ -1,46 +1,48 @@
 package component;
 
+import task.Upgrade;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import main.Bot;
 
-public class UpgradeManager implements Component
-{
-	Bot root;
+public class UpgradeManager extends Component {
 	
 	public UpgradeManager(Bot r) {
-		root = r;
+		super(r);
 	}
 	
 	@Override
-	public String getComponentName() {
+	public int getResourcePriority() {
+		
+		return 600;
+	}
+	
+	@Override
+	public String getName() {
+		
 		return "UpgradeManager";
 	}
 	
 	@Override
 	public void onFrame() {
-		for(Unit u : root.self.getUnits())
+		
+		
+		for(UpgradeType ut : root.goal.upgrades)
 		{
-			if(u.getType() == UnitType.Protoss_Fleet_Beacon && root.self.isUpgrading(UpgradeType.Carrier_Capacity) == false)
+			if(root.goal.finishAllPrerequests(ut) == false) continue;
+			//System.out.println(root.goal.getGoal(ut) + " / " + root.goal.getNow(ut));
+			if(root.goal.getNow(ut) < root.goal.getGoal(ut))
 			{
-				if(u.isUpgrading() == false)
+				UnitType b = root.goal.getBuilding(ut);
+				for(Unit u : root.info.getMyUnitsByType(b))
 				{
-					u.upgrade(UpgradeType.Carrier_Capacity);
-				}
-			}
-			if(u.getType() == UnitType.Protoss_Cybernetics_Core && root.self.isUpgrading(UpgradeType.Singularity_Charge) == false)
-			{
-				if(u.isUpgrading() == false)
-				{
-					u.upgrade(UpgradeType.Singularity_Charge);
-				}
-			}
-			if(u.getType() == UnitType.Protoss_Citadel_of_Adun && root.self.isUpgrading(UpgradeType.Leg_Enhancements) == false)
-			{
-				if(u.isUpgrading() == false)
-				{
-					u.upgrade(UpgradeType.Leg_Enhancements);
+					if(root.info.canStartNewTask(u))
+					{
+						Upgrade task = new Upgrade(root, u, ut);
+						if(makeProposal(task))
+							break;
+					}
 				}
 			}
 		}

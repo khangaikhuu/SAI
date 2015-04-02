@@ -1,20 +1,58 @@
 package main;
 import bwapi.*;
 import bwta.BWTA;
+import gui.GUIManager;
+import headquarter.EconomyHQ;
+import headquarter.HQ;
+import headquarter.StrategyHQ;
+import information.GameInfo;
+import information.Goal;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.*;
 
+import strategy.Strategy;
 import task.Task;
-import util.Debug;
+import task.TaskManager;
+import component.ArmyControlManager;
+import component.ArmyProductionManager;
+import component.BaseManager;
 import component.Component;
+import component.SupplyManager;
+import component.TechBuildingManager;
+import component.UpgradeManager;
+import computation.General;
 
 public class Bot extends DefaultBWListener {
 	
     private Mirror mirror = new Mirror();
     public Game game;
-    public Player self;
+    public Player self, enemy;
+    
+    boolean isFirstFrame;
+    
+    public computation.General util;
+    public gui.GUIManager guiManager;
+    public task.TaskManager taskManager;
+    public information.GameInfo info;
+    public information.Goal goal;
+    public Strategy strategy;
+    
+    // HQ
+    public List <HQ> listOfHQ;
+    public EconomyHQ economyHQ;
+    public StrategyHQ strategyHQ;
+    
+    // Component
+    public List <Component> listOfComponents;
+    public BaseManager baseManager;
+    public ArmyControlManager armyControlManager;
+    public ArmyProductionManager armyProductionManager;
+    public SupplyManager supplyManager;
+    public TechBuildingManager techBuildingManager;
+    public UpgradeManager upgradeManager;
+    
+    // Task
+    public List <Task> listOfTasks;
     
     public void run() {
         mirror.getModule().setEventListener(this);
@@ -22,135 +60,139 @@ public class Bot extends DefaultBWListener {
     }
     
     @Override
-    public void onUnitCreate(Unit unit) {
-        System.out.println("New unit " + unit.getType());
+    public void onUnitMorph(Unit unit)
+    {
+    	info.onUnitCreate(unit);
+    	//System.out.println("New unit " + unit.getType());
     }
     
-    public info.GlobalGameInfo gameInfo;
-    public info.FrameGameInfo frameInfo;
+    @Override
+    public void onUnitCreate(Unit unit)
+    {
+    	info.onUnitCreate(unit);
+        //System.out.println("New unit " + unit.getType());
+    }
     
-    public List <task.Task> currentTasks;
-    public List <component.Component> components;
-    
-    public util.Debug debug;
-    
+    @Override
+    public void onUnitDestroy(Unit unit) 
+    {
+    	//System.out.println("destory unit " + unit.getType());
+    	info.onUnitDestroy(unit);
+    };
     
     @Override
     public void onStart() {
     	
+    	isFirstFrame = true;
+    	
         game = mirror.getGame();
         self = game.self();
+        enemy = game.enemies().get(0);
         
         game.setLocalSpeed(0);
+        game.enableFlag(1);
+        
+        util = new General(this);
+        info = new GameInfo(this);
+        guiManager = new GUIManager(this);
+        taskManager = new TaskManager(this);
+        goal = new Goal(this);
+        
+        listOfHQ = new ArrayList<HQ>();
+        listOfComponents = new ArrayList<Component>();
+        listOfTasks = new ArrayList<Task>();
+        
+        // HQ
+        economyHQ = new EconomyHQ(this);
+        listOfHQ.add(economyHQ);
+        strategyHQ = new StrategyHQ(this);
+        listOfHQ.add(strategyHQ);
+        
+                
+        // Component
+        baseManager = new BaseManager(this);
+        listOfComponents.add(baseManager);
+        armyControlManager = new ArmyControlManager(this);
+        listOfComponents.add(armyControlManager);
+        armyProductionManager = new ArmyProductionManager(this);
+        listOfComponents.add(armyProductionManager);
+        supplyManager = new SupplyManager(this);
+        listOfComponents.add(supplyManager);
+        techBuildingManager = new TechBuildingManager(this);
+        listOfComponents.add(techBuildingManager);
+        upgradeManager = new UpgradeManager(this);
+        listOfComponents.add(upgradeManager);
+        
         
         System.out.println("Analyzing map...");
         BWTA.readMap();
         BWTA.analyze();
         System.out.println("Map data ready");
-        
-        gameInfo = new info.GlobalGameInfo();
-        gameInfo.init();
-        frameInfo = new info.FrameGameInfo(this);
-        debug = new Debug(this);
-        
-        currentTasks = new ArrayList<task.Task>();
-        components = new ArrayList<component.Component>();
-        components.add(new component.BaseManager(this));
-        components.add(new component.Reconnoiter(this));
-        components.add(new component.SupplyManager(this));
-        components.add(new component.TechBuildingPlanner(this));
-        components.add(new component.ArmyProductionManager(this));
-        components.add(new component.ArmyCommander(this));
-        components.add(new component.UpgradeManager(this));
     }
     
     @Override
     public void onFrame() {
     	
-    	util.Debug.root = this;
-    	util.General.root = this;
+    	guiManager.onFrameStart();
     	
-    	long frameStart = System.nanoTime();
-    	
-        debug.debugInfo.clear();
-        debug.debugLong = 0;
-        debug.addDebugInfo("Frame #" + frameInfo.frameNumber + "");
-        
-        frameInfo.onFrameInit();
-        List <Task> remainTasks = new ArrayList<Task>();
-        for(Task t : currentTasks)
-        {
-        	if(t.isFinished())
-        		continue;
-        	frameInfo.remainMinerals -= t.getNeedMinerals();
-        	frameInfo.remainGas -= t.getNeedGas();
-        	remainTasks.add(t);
-        }
-        currentTasks = remainTasks;
-        
-        
-        long [] timeUseage = new long[components.size()];
-        long total = 0;
-        
-        int componentID = 0;
-        for (Component comp : components)
-        {
-        	long prev = System.nanoTime();
-        	componentID += 1;
-        	debug.addDebugInfo("[Component #" + componentID + ": " + comp.getComponentName() + "]");
-        	comp.onFrame();
-        	long now = System.nanoTime();
-        	total += now - prev;
-        	timeUseage[componentID - 1] = now - prev;
-        }
-        
-        int taskID = 0;
-        for(Task t : currentTasks)
-        {
-        	taskID += 1;
-        	debug.addDebugInfo("<Task #" + taskID + ": " + t.getTaskName() + "> : Minerals = " + t.getNeedMinerals() + ", Gas = " + t.getNeedGas());
-        	t.onFrame();
-        }
-        
-        String timePercents = "[";
-        for(int i = 0; i < components.size(); i++)
-        {
-        	if(timeUseage[i] * 100 / total < 10)
-        		timePercents += "0";
-        	timePercents += "" + (timeUseage[i] * 100 / total) + " | ";
-        }
-        timePercents += "]";
-        //debug.addDebugInfo(timePercents);
-        
-        long frameUses = System.nanoTime() - frameStart;
-        String utilUseage = "" + (debug.debugLong * 100 / frameUses);
-        //debug.addDebugInfo(debug.debugLong + " / " + frameUses + " = " + utilUseage);
-        String fps = "" + (1000000000 / frameUses);
-        debug.addDebugInfo(fps + " FPS.");
-        debug.outputDebugInfoToScreen();
-        
-        
-        
-        game.drawCircleMap(util.General.getNextBasePosition(this).getX(), util.General.getNextBasePosition(this).getY(), 100, new Color(0, 255, 0));
-        game.drawLineMap(util.General.getNextBasePosition(this).getX(), util.General.getNextBasePosition(this).getY(), gameInfo.myFirstBase().getX(), gameInfo.myFirstBase().getY(), new Color(255, 255, 0));
-        
-    }
-
-    public static void main(String[] args) {
-    	try{
-    		new Bot().run();
+    	if(isFirstFrame)
+    	{
+    		isFirstFrame = false;
+    		info.updateBasesFirstFrame();
     	}
+    	
+    	info.onFrameStart();
+    	
+    	taskManager.onFrameStart();
+    	for(Component c : listOfComponents)
+    		c.onFrameStart();
+    	
+    	guiManager.addDebugInfo("#Tasks = " + listOfTasks.size());
+    	for(Task t : listOfTasks)
+    	{
+    		guiManager.addDebugInfo("(" + t.needMinerials() + ") " + t.getName());
+    	}
+    	guiManager.addDebugInfo("#BaseLocations = " + bwta.BWTA.getBaseLocations().size());
+    	
+    	
+    	strategyHQ.onFrame();
+    	economyHQ.onFrame();
+    	
+    	
+    	for(Task t : listOfTasks)
+			t.onFrame();
+    	
+    	guiManager.onFrameEnd();
+    	
+    	for(Unit u : self.getUnits())
+    	{
+    		if(info.getTask(u) != null)
+    			if(info.getTask(u).creator != null)
+    			{
+    				game.setTextSize(1);
+    				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 10, info.getTask(u).getName());
+    				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 25, info.getTask(u).creator.getName());
+    			}
+    	}
+    	
+    }
+    
+    public static void main(String[] args) {
+    	//try{
+    		new Bot().run();
+    	/*}
     	catch(Exception e)
     	{
+    		e.printStackTrace();
     		
     		try{
-    			PrintWriter writer = new PrintWriter("../write/exception" + (new Date(System.currentTimeMillis())).toString().replace(' ', '_').replace(':', '_') +  ".txt");
+    			PrintWriter writer = new PrintWriter((new Date(System.currentTimeMillis())).toString().replace(' ', '_').replace(':', '_') +  ".txt");
     			e.printStackTrace(writer);
     			writer.close();
     		} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
+				
 				e1.printStackTrace();
 			}
-    	}
+    	}*/
     }
 }
