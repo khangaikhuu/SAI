@@ -32,6 +32,15 @@ public class ProtossVersusTerran extends Strategy {
 			currentOpening.onFrame();
 		}
 		
+		if(root.self.supplyUsed() >= 50 * 2)
+			root.blackboard.setNumberOfBaseAtLesst(2);
+		if(root.self.supplyUsed() >= 100 * 2)
+			root.blackboard.setNumberOfBaseAtLesst(3);
+		if(root.self.supplyUsed() >= 150 * 2)
+			root.blackboard.setNumberOfBaseAtLesst(4);
+		
+			
+		
 	}
 
 	@Override

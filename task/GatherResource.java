@@ -5,6 +5,7 @@ import java.util.List;
 
 import main.Bot;
 import information.BaseInfo;
+import bwapi.PositionOrUnit;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -27,18 +28,19 @@ public class GatherResource extends Task {
 		workerForGas = new ArrayList<Unit>();
 	}
 	
+	public int getWorkerCountForMinerals()
+	{
+		return workerForMinearals.size();
+	}
+	
+	public void addWorkerForMinerals(Unit worker)
+	{
+		workerForMinearals.add(worker);
+		root.info.getUnitInfo(worker).currentTask = this;
+	}
+	
 	@Override
 	public void onFrame() {
-		
-		// TODO: move to "Balance Worker" task
-		for(Unit u : root.info.myUnits.get(UnitType.Protoss_Probe))
-		{
-			if(root.info.getTask(u) == null)
-			{
-				workerForMinearals.add(u);
-				root.info.setTask(u, this);
-			}
-		}
 		
 		//TODO: what if these probe dead?
 		
@@ -79,7 +81,7 @@ public class GatherResource extends Task {
 				{
 					if(root.game.getFrameCount() - root.info.getUnitInfo(u).lastCommandFrame > 50)
 					{
-						u.attack(u.getPosition());
+						u.attack(new PositionOrUnit(u.getPosition()));
 						root.info.getUnitInfo(u).lastCommandFrame = root.game.getFrameCount();
 					}
 				}
@@ -111,7 +113,7 @@ public class GatherResource extends Task {
 				{
 					if(root.game.getFrameCount() - root.info.getUnitInfo(u).lastCommandFrame > 50)
 					{
-						u.attack(u.getPosition());
+						u.attack(new PositionOrUnit(u.getPosition()));
 						root.info.getUnitInfo(u).lastCommandFrame = root.game.getFrameCount();
 					}
 				}

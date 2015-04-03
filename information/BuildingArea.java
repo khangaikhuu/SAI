@@ -158,7 +158,7 @@ public class BuildingArea {
 							valid[i][j] = false;
 				}
 		
-
+		valid[cx][cy] = true;
 		
 		int validMinX = 1000;
 		int validMaxX = 0;

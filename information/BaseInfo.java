@@ -27,6 +27,7 @@ public class BaseInfo {
 	
 	public int avaliableMinerals;
 	public Unit[] avaliableMineralsUnit;
+	boolean reservedBase;
 	
 	public BaseInfo(Bot r) {
 		root = r;
@@ -35,9 +36,11 @@ public class BaseInfo {
 		gasStation = new ArrayList<Unit>();
 		gasUsed = 0;
 		canWalkTo = true;
+		reservedBase = false;
 	}
 	
-	void getBuildingArea(int xLen, int yLen)
+	
+	public void getBuildingArea(int xLen, int yLen)
 	{
 		int centerX = (position.getX() + 16) / 32;
 		int centerY = (position.getY() + 16) / 32;
@@ -49,6 +52,7 @@ public class BaseInfo {
 	
 	void onFirstFrame()
 	{
+		
 		for(int iteration = 0; iteration < minerals.size(); iteration ++)
 			for(int i = 0; i < minerals.size() - 1; i++)
 			{
@@ -158,7 +162,11 @@ public class BaseInfo {
 		}
 		if(root.util.isBase(targetStruct))
 		{
-			// TODO
+			if(reservedBase || myBase != null)
+				return null;
+			if(reserveThatSlot)
+				reservedBase = true;
+			return baseLocation.getTilePosition();
 		}
 		else
 		{

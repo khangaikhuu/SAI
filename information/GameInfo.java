@@ -32,7 +32,6 @@ public class GameInfo {
 	UnitInfo[] unitInfo;
 	
 	public BaseInfo[] bases;
-	public int myBaseCount;
 	
 	private boolean betterThan(BaseInfo a, BaseInfo b) {
 		
@@ -125,8 +124,15 @@ public class GameInfo {
 				bases[i].getBuildingArea(GlobalConstant.Building_Area_X_OtherBase, GlobalConstant.Building_Area_Y_OtherBase);
 		}
 		
-		
-		myBaseCount = 1;
+	}
+	
+	public int getReadyBases()
+	{
+		int ret = 0;
+		for(int i = 0; i < bases.length; i++)
+			if(bases[i].gatherResourceTask != null && bases[i].avaliableMinerals > 4)
+				ret ++;
+		return ret;
 	}
 	
 	public UnitInfo getUnitInfo(Unit u)
@@ -205,6 +211,21 @@ public class GameInfo {
 		
 	}
 	
+	public List<Unit> getMyFinishedCombatUnits()
+	{
+		List<Unit> ret = new ArrayList<Unit>();
+		for(UnitType ut : myUnits.keySet())
+			if(root.util.isCombatUnit(ut))
+				for(Unit u : myUnits.get(ut))
+				{
+					if(u.isBeingConstructed())
+						continue;
+					ret.add(u);
+				}
+		
+		return ret;		
+	}
+	
 	public List<Unit> getMyUnitsByType(UnitType t)
 	{
 		List<Unit> ret = new ArrayList<Unit>();
@@ -214,13 +235,13 @@ public class GameInfo {
 	}
 
 	public void onUnitDestroy(Unit u) {
-		if(u.getPlayer() == root.self || u.getPlayer().isNeutral())
+		if(u.getPlayer().getID() == root.self.getID() || u.getPlayer().isNeutral())
 			getUnitInfo(u).destroy = true;
 	}
 
 	public void onUnitCreate(Unit u) {
 		
-		if(u.getPlayer() == root.self || u.getPlayer().isNeutral())
+		if(u.getPlayer().getID() == root.self.getID() || u.getPlayer().isNeutral())
 		{
 			List<Unit> lis = myUnits.get(u.getType());
 			if(lis == null)

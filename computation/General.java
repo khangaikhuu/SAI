@@ -1,5 +1,9 @@
 package computation;
 
+import information.EnemyInfo.EnemyUnitInfo;
+
+import java.util.List;
+
 import task.Task;
 import bwapi.*;
 import main.Bot;
@@ -10,6 +14,35 @@ public class General {
 	
 	public General(Bot r) {
 		root = r;
+	}
+	
+	public double computePower(List <Unit> lis)
+	{
+		double ret = 0;
+		for(Unit u : lis)
+		{
+			ret += u.getType().supplyRequired();
+		}
+		return ret;
+	}
+	
+	public double computePowerEnemy(List <EnemyUnitInfo> lis)
+	{
+		double ret = 0;
+		for(EnemyUnitInfo u : lis)
+		{
+			ret += u.unitType.supplyRequired();
+			if(u.unitType == UnitType.Protoss_Photon_Cannon)
+				ret += 6;
+			if(u.unitType == UnitType.Terran_Bunker)
+				ret += 16;
+			if(u.unitType == UnitType.Zerg_Sunken_Colony)
+				ret += 8;
+			
+			
+			
+		}
+		return ret;
 	}
 		
 	public int countUnit(UnitType u, boolean includeTask, boolean includeBuilding, boolean includeFinish)
@@ -62,6 +95,16 @@ public class General {
 		if(t == UnitType.Zerg_Hatchery) return true;
 		if(t == UnitType.Zerg_Hive) return true;
 		if(t == UnitType.Zerg_Lair) return true;
+		return false;
+	}
+	
+	public boolean isCombatUnit(UnitType t)
+	{
+		if(t == UnitType.Terran_Bunker) return true;
+		
+		if(t.canAttack() == true && t.isWorker() == false)
+			return true;
+		
 		return false;
 	}
 	

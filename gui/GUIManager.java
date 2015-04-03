@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bwapi.*;
+import bwapi.Text.Size.Enum;
 import main.*;
 
 public class GUIManager {
@@ -41,7 +42,7 @@ public class GUIManager {
 	
 	public void onFrameEnd()
 	{
-    	root.game.setTextSize(10);
+    	root.game.setTextSize(Enum.Default);
         int startX = 12;
         int startY = 12;
         for (String s : debugInfo)
@@ -55,9 +56,6 @@ public class GUIManager {
 		{
 			needInit = false;
 			attackPosition.depth = 0;
-			Position myFirstBase = root.util.getMyFirstBasePosition();
-			attackPosition.x = myFirstBase.getX();
-			attackPosition.y = myFirstBase.getY();
 			attackPosition.name = "Attack Point";
 			attackPosition.enabled = true;
 		}
@@ -109,6 +107,9 @@ public class GUIManager {
 			{
 				currentSelect.x = (int)mouseOnMapX;
 				currentSelect.y = (int)mouseOnMapY;
+				
+				root.blackboard.setAttackPosition(new Position(currentSelect.x, currentSelect.y));
+				
 			}
 		}
 		

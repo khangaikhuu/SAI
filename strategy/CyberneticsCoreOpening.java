@@ -21,10 +21,11 @@ public class CyberneticsCoreOpening extends Strategy {
 		
 		if(probe == 10)
 		{
-			root.goal.setGoal(UnitType.Protoss_Assimilator);
+			//root.goal.setGoal(UnitType.Protoss_Assimilator);
+			root.blackboard.setHaveGasBuilding(true);
 			root.goal.setGoal(UnitType.Protoss_Cybernetics_Core);
+			root.blackboard.setFirstTimeScout();
 		}
-		
 		
 	}
 	

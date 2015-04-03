@@ -37,14 +37,33 @@ public class BuildStruct extends Task {
 		
 		if(worker != null && root.info.getUnitInfo(worker).destroy)
 			worker = null;
+		
 		if(worker == null)
 		{
 			if(aroundBase.gatherResourceTask != null && aroundBase.gatherResourceTask.state == TaskState.ACTIVE)
 			{
 				List <Unit> t = aroundBase.gatherResourceTask.requestUnit(UnitType.Protoss_Probe, 1);
 				if(t.size() > 0)
+				{
 					worker = t.get(0);
+					root.info.setTask(worker, this);
+				}
 			}
+			if(worker == null)
+				for(int i = 0; i < root.blackboard.getNumberOfBase(); i++)
+				{
+					BaseInfo thisBase = root.info.bases[i];
+					if(thisBase.gatherResourceTask != null && thisBase.gatherResourceTask.state == TaskState.ACTIVE)
+					{
+						List <Unit> t = thisBase.gatherResourceTask.requestUnit(UnitType.Protoss_Probe, 1);
+						if(t.size() > 0 && worker == null)
+						{
+							worker = t.get(0);
+							root.info.setTask(worker, this);
+						}
+					}
+				}
+			
 			if(worker != null)
 				root.info.getUnitInfo(worker).currentTask = this;
 			else
@@ -64,7 +83,7 @@ public class BuildStruct extends Task {
 			if(root.game.getFrameCount() - lastBuildFrame > 30)
 			{
 				lastBuildFrame = root.game.getFrameCount();
-				worker.build(buildPosition, targetStruct);
+				worker.build(targetStruct, buildPosition);
 			}
 		}
 	}
@@ -94,6 +113,10 @@ public class BuildStruct extends Task {
 					if(root.util.isGasBuilding(targetStruct))
 					{
 						aroundBase.gasStation.add(u);
+					}
+					if(root.util.isBase(targetStruct))
+					{
+						aroundBase.myBase = u;
 					}
 				}
 			}

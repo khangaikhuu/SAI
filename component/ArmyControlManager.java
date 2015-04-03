@@ -30,6 +30,10 @@ public class ArmyControlManager extends Component {
 			mainForceControlTask = new MainForceControl(root);
 			makeProposal(mainForceControlTask);
 		}
+		
+		
+		
+		
 	}
 
 }

@@ -28,11 +28,17 @@ public class TechBuildingManager extends Component {
 		for(UnitType t : root.goal.techBuildings)
 		{
 			if(root.util.countUnit(t, true, true, true) < root.goal.getGoal(t))
-				if(root.goal.finishAllPrerequests(t))
+			{
+				if(root.util.isGasBuilding(t))
+				{
+					root.blackboard.setHaveGasBuilding(true);
+				}
+				else if(root.goal.finishAllPrerequests(t))
 				{
 					BuildStruct task = new BuildStruct(root, root.info.bases[0], t);
 					makeProposal(task);
 				}
+			}
 		}
 		
 	}

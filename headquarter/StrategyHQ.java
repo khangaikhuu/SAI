@@ -17,7 +17,7 @@ public class StrategyHQ implements HQ {
 		
 		if(root.strategy == null)
 		{
-			if(root.enemy.getRace() == Race.Terran)
+			//if(root.enemy.getRace() == Race.Terran)
 				root.strategy = new ProtossVersusTerran(root);
 		}
 		

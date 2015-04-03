@@ -33,17 +33,18 @@ public class BaseManager extends Component {
 		 * 2. Gather Resource
 		 */
 		
-		for(int i = 0; i < root.info.myBaseCount; i++)
+		for(int i = 0; i < root.blackboard.getNumberOfBase(); i++)
 		{
 			Unit b = root.info.bases[i].myBase;
-			if(b == null || root.info.getUnitInfo(b).destroy)
+			
+			if(b == null || root.info.getUnitInfo(b).destroy || b.isBeingConstructed())
 				continue;
 			
-			int myProbes = 0;
-			if(root.info.myUnits.get(UnitType.Protoss_Probe) != null)
-				myProbes += root.info.myUnits.get(UnitType.Protoss_Probe).size();
+			int myProbes = root.util.countUnit(UnitType.Protoss_Probe, true, true, true);
 			
-			if(b.isTraining() == false && myProbes < 3 * root.info.bases[0].minerals.size())
+			int myProbesNeed = Math.min(80, root.blackboard.getNumberOfBase() + 1) * 27;
+			
+			if(b.isTraining() == false && myProbes < myProbesNeed)
 			{
 				TrainUnit task = new TrainUnit(root, b, UnitType.Protoss_Probe);
 				makeProposal(task);

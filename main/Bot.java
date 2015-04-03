@@ -1,11 +1,14 @@
 package main;
 import bwapi.*;
+import bwapi.Text.Size.Enum;
 import bwta.BWTA;
 import gui.GUIManager;
 import headquarter.EconomyHQ;
 import headquarter.HQ;
 import headquarter.StrategyHQ;
+import information.EnemyInfo;
 import information.GameInfo;
+import information.GlobalVariables;
 import information.Goal;
 
 import java.util.*;
@@ -17,6 +20,8 @@ import component.ArmyControlManager;
 import component.ArmyProductionManager;
 import component.BaseManager;
 import component.Component;
+import component.ExpansionManager;
+import component.ScoutManager;
 import component.SupplyManager;
 import component.TechBuildingManager;
 import component.UpgradeManager;
@@ -34,8 +39,10 @@ public class Bot extends DefaultBWListener {
     public gui.GUIManager guiManager;
     public task.TaskManager taskManager;
     public information.GameInfo info;
+    public information.EnemyInfo enemyInfo;
     public information.Goal goal;
     public Strategy strategy;
+    public GlobalVariables blackboard;
     
     // HQ
     public List <HQ> listOfHQ;
@@ -50,6 +57,8 @@ public class Bot extends DefaultBWListener {
     public SupplyManager supplyManager;
     public TechBuildingManager techBuildingManager;
     public UpgradeManager upgradeManager;
+    public ScoutManager scoutManager;
+    public ExpansionManager expansionManager;
     
     // Task
     public List <Task> listOfTasks;
@@ -60,9 +69,16 @@ public class Bot extends DefaultBWListener {
     }
     
     @Override
+    public void onUnitDiscover(Unit unit)
+    {
+    	enemyInfo.onUnitCreate(unit);
+    }
+    
+    @Override
     public void onUnitMorph(Unit unit)
     {
     	info.onUnitCreate(unit);
+    	
     	//System.out.println("New unit " + unit.getType());
     }
     
@@ -70,6 +86,7 @@ public class Bot extends DefaultBWListener {
     public void onUnitCreate(Unit unit)
     {
     	info.onUnitCreate(unit);
+    	enemyInfo.onUnitCreate(unit);
         //System.out.println("New unit " + unit.getType());
     }
     
@@ -78,6 +95,7 @@ public class Bot extends DefaultBWListener {
     {
     	//System.out.println("destory unit " + unit.getType());
     	info.onUnitDestroy(unit);
+    	enemyInfo.onUnitDestroy(unit);
     };
     
     @Override
@@ -94,9 +112,11 @@ public class Bot extends DefaultBWListener {
         
         util = new General(this);
         info = new GameInfo(this);
+        enemyInfo = new EnemyInfo(this);
         guiManager = new GUIManager(this);
         taskManager = new TaskManager(this);
         goal = new Goal(this);
+        blackboard = new GlobalVariables(this);
         
         listOfHQ = new ArrayList<HQ>();
         listOfComponents = new ArrayList<Component>();
@@ -108,20 +128,25 @@ public class Bot extends DefaultBWListener {
         strategyHQ = new StrategyHQ(this);
         listOfHQ.add(strategyHQ);
         
-                
+        
         // Component
         baseManager = new BaseManager(this);
-        listOfComponents.add(baseManager);
         armyControlManager = new ArmyControlManager(this);
-        listOfComponents.add(armyControlManager);
         armyProductionManager = new ArmyProductionManager(this);
-        listOfComponents.add(armyProductionManager);
         supplyManager = new SupplyManager(this);
-        listOfComponents.add(supplyManager);
         techBuildingManager = new TechBuildingManager(this);
-        listOfComponents.add(techBuildingManager);
         upgradeManager = new UpgradeManager(this);
+        scoutManager = new ScoutManager(this);
+        expansionManager = new ExpansionManager(this);
+        
+        listOfComponents.add(baseManager);
+        listOfComponents.add(armyControlManager);
+        listOfComponents.add(armyProductionManager);
+        listOfComponents.add(supplyManager);
+        listOfComponents.add(techBuildingManager);
         listOfComponents.add(upgradeManager);
+        listOfComponents.add(scoutManager);
+        listOfComponents.add(expansionManager);
         
         
         System.out.println("Analyzing map...");
@@ -139,9 +164,12 @@ public class Bot extends DefaultBWListener {
     	{
     		isFirstFrame = false;
     		info.updateBasesFirstFrame();
+    		enemyInfo.onFirstFrame();
+    		blackboard.onFirstFrame();
     	}
     	
     	info.onFrameStart();
+    	enemyInfo.onFrame();
     	
     	taskManager.onFrameStart();
     	for(Component c : listOfComponents)
@@ -169,7 +197,7 @@ public class Bot extends DefaultBWListener {
     		if(info.getTask(u) != null)
     			if(info.getTask(u).creator != null)
     			{
-    				game.setTextSize(1);
+    				game.setTextSize(Enum.Default);
     				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 10, info.getTask(u).getName());
     				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 25, info.getTask(u).creator.getName());
     			}

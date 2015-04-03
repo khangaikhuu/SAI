@@ -79,8 +79,6 @@ public class Goal {
 	
 	public void setGoal(UnitType u, int number)
 	{
-		if(want.get(u) >= number) return;
-		
 		want.put(u, new Integer(number));
 		for(UnitType t : prerequests.get(u))
 		{
