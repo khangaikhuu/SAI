@@ -2,22 +2,22 @@ package strategy;
 
 import main.Bot;
 
-public class ProtossVersusTerran extends Strategy {
+public class ProtossVersusZerg extends Strategy {
 
-	public ProtossVersusTerran(Bot r) {
+	public ProtossVersusZerg(Bot r) {
 		super(r);
 	}
 	
 	Strategy currentOpening;
-	
+
 	@Override
 	public void onFrame() {
 		
 		if(currentOpening == null)
-			currentOpening = new CyberneticsCoreOpening(root);
+			currentOpening = new TwoGatewayOpening(root);
 		if(currentOpening.ended())
 		{
-			if(currentOpening.getName() == "CyberneticsCoreOpening")
+			if(currentOpening.getName() == "TwoGatewayOpening")
 			{
 				currentOpening = new ThreeGatewayDragoon(root);
 				
@@ -49,7 +49,7 @@ public class ProtossVersusTerran extends Strategy {
 
 	@Override
 	public String getName() {
-		return "ProtossVersusTerran";
+		return "ProtossVersusZerg";
 	}
 
 }

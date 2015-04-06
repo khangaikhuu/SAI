@@ -8,6 +8,7 @@ import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
 import bwta.BaseLocation;
 import task.Task;
 import main.Bot;
@@ -33,6 +34,8 @@ public class GameInfo {
 	
 	public BaseInfo[] bases;
 	
+	boolean reOrderBases;
+	
 	private boolean betterThan(BaseInfo a, BaseInfo b) {
 		
 		/* Compare method:
@@ -41,13 +44,8 @@ public class GameInfo {
 		 * 3. should be close to my start point
 		 */
 		
-		Position myStartLocation = root.util.getMyFirstBasePosition();
-		TilePosition me = root.util.getNearestTilePosition(myStartLocation);
-		TilePosition pa = root.util.getNearestTilePosition(a.position);
-		TilePosition pb = root.util.getNearestTilePosition(b.position);
-		
-		boolean connectA = bwta.BWTA.isConnected(me, pa);
-		boolean connectB = bwta.BWTA.isConnected(me, pb);
+		boolean connectA = a.canWalkTo;
+		boolean connectB = b.canWalkTo;
 		
 		if(connectA == true && connectB == false) return true;
 		if(connectA == false && connectB == true) return false;
@@ -55,10 +53,58 @@ public class GameInfo {
 		if(a.baseLocation.isMineralOnly() == false && b.baseLocation.isMineralOnly() == true) return true;
 		if(a.baseLocation.isMineralOnly() == true && b.baseLocation.isMineralOnly() == false) return false;
 		
-		double distA = bwta.BWTA.getGroundDistance(me, pa);
-		double distB = bwta.BWTA.getGroundDistance(me, pb);
+		double distA = a.distToMe;
+		double distB = b.distToMe;
 		
 		return (distA < distB);
+	}
+	
+	private boolean betterThanConsiderEnemy(BaseInfo a, BaseInfo b) {
+		
+		/* Compare method:
+		 * 1. should be walkable from my start point
+		 * 2. should have gas
+		 * 3. should be close to my start point
+		 */
+		
+		
+		boolean connectA = a.canWalkTo;
+		boolean connectB = b.canWalkTo;
+		
+		
+		
+		
+		double distA = a.distToMe;
+		double distB = b.distToMe;
+		double distAEnemy = a.distToEnemy;
+		double distBEnemy = b.distToEnemy;
+		
+		boolean AIsMine = (distA < distAEnemy);
+		boolean BIsMine = (distB < distBEnemy);
+		
+		if(AIsMine == true && BIsMine == false)
+			return true;
+		if(AIsMine == false && BIsMine == true)
+			return false;
+		
+		if(AIsMine == true && BIsMine == true)
+		{
+			if(connectA == true && connectB == false) return true;
+			if(connectA == false && connectB == true) return false;
+			
+			if(a.baseLocation.isMineralOnly() == false && b.baseLocation.isMineralOnly() == true) return true;
+			if(a.baseLocation.isMineralOnly() == true && b.baseLocation.isMineralOnly() == false) return false;
+			
+			return distA < distB;
+		}
+		
+		if(connectA == true && connectB == false) return false;
+		if(connectA == false && connectB == true) return true;
+		if(a.baseLocation.isMineralOnly() == false && b.baseLocation.isMineralOnly() == true) return false;
+		if(a.baseLocation.isMineralOnly() == true && b.baseLocation.isMineralOnly() == false) return true;
+		
+		
+		return (distAEnemy > distBEnemy);
 	}
 	
 	public void updateBasesFirstFrame()
@@ -75,6 +121,9 @@ public class GameInfo {
 			bases[i].position = b.getPosition();
 			if(bwta.BWTA.isConnected(me, root.util.getNearestTilePosition(b.getPosition())) == false)
 				bases[i].canWalkTo = false;
+			else
+				bases[i].canWalkTo = true;
+			bases[i].distToMe = bwta.BWTA.getGroundDistance(root.util.getNearestTilePosition(root.util.getMyFirstBasePosition()), bases[i].baseLocation.getTilePosition());
 		}
 		
 		for(int iteration = 0; iteration < n; iteration ++)
@@ -135,6 +184,15 @@ public class GameInfo {
 		return ret;
 	}
 	
+	public int getLastBaseIncludeBuilding()
+	{
+		int ret = 0;
+		for(int i = 0; i < bases.length; i++)
+			if(bases[i].myBase != null)
+				ret = i;
+		return ret;
+	}
+	
 	public UnitInfo getUnitInfo(Unit u)
 	{
 		if(unitInfo[u.getID()] == null)
@@ -157,13 +215,15 @@ public class GameInfo {
 	
 	public void setTask(Unit u, Task t)
 	{
-		getUnitInfo(u).currentTask= t;
+		if(u != null)
+			getUnitInfo(u).currentTask= t;
 	}
 	
 	public GameInfo(Bot r) {
 		root = r;
 		unitInfo = new UnitInfo[GlobalConstant.MAX_UNIT];
 		myUnits = new HashMap<UnitType, List<Unit>>();
+		reOrderBases = false;
 	}
 	
 	public void onFrameStart()
@@ -184,6 +244,24 @@ public class GameInfo {
 		for(int i = 0; i < bases.length; i++)
 			bases[i].onFrame();
 		
+		if(reOrderBases == false && root.enemyInfo.startPoint != null)
+		{
+			reOrderBases = true;
+			int n = bases.length;
+			//System.out.println("sort " + n);
+			for(int i = 0; i < n; i++)
+				bases[i].distToEnemy = BWTA.getGroundDistance(root.util.getNearestTilePosition(root.enemyInfo.startPoint), bases[i].baseLocation.getTilePosition());
+			for(int iteration = 0; iteration < n; iteration ++)
+				for(int i = 0; i < n-1; i++)
+					if(betterThanConsiderEnemy(bases[i+1], bases[i]))
+					{
+						BaseInfo t = bases[i];
+						bases[i] = bases[i+1];
+						bases[i+1] = t;
+					}
+			for(int i = 0; i < n; i++)
+				bases[i].baseID = i;
+		}
 		
 		/*
 		for(int i = 0; i < bases.length; i++)
@@ -200,12 +278,14 @@ public class GameInfo {
 		}
 		*/
 		
+		
 		/*
 		for(int i = 0; i < bases.length - 1; i++)
 		{
 			root.game.drawLineMap(bases[i].position.getX(), bases[i].position.getY(), bases[i+1].position.getX(), bases[i+1].position.getY(), new Color(255, 0, 0));
 		}
 		*/
+		
 		
 		
 		
@@ -222,6 +302,20 @@ public class GameInfo {
 						continue;
 					ret.add(u);
 				}
+		
+		return ret;		
+	}
+	
+	public List<Unit> getMyUnits()
+	{
+		List<Unit> ret = new ArrayList<Unit>();
+		for(UnitType ut : myUnits.keySet())
+			for(Unit u : myUnits.get(ut))
+			{
+				if(u.isBeingConstructed())
+					continue;
+				ret.add(u);
+			}
 		
 		return ret;		
 	}

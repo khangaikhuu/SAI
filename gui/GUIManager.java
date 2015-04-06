@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bwapi.*;
-import bwapi.Text.Size.Enum;
 import main.*;
 
 public class GUIManager {
@@ -42,7 +41,7 @@ public class GUIManager {
 	
 	public void onFrameEnd()
 	{
-    	root.game.setTextSize(Enum.Default);
+    	root.game.setTextSize(8);
         int startX = 12;
         int startY = 12;
         for (String s : debugInfo)

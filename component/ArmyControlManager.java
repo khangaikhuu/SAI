@@ -6,7 +6,7 @@ import main.Bot;
 
 public class ArmyControlManager extends Component {
 
-	Task mainForceControlTask;
+	public Task mainForceControlTask;
 	
 	public ArmyControlManager(Bot r) {
 		super(r);
@@ -30,6 +30,8 @@ public class ArmyControlManager extends Component {
 			mainForceControlTask = new MainForceControl(root);
 			makeProposal(mainForceControlTask);
 		}
+		
+		
 		
 		
 		

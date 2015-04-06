@@ -30,7 +30,7 @@ public class TrainUnit extends Task {
 	
 	@Override
 	public boolean checkPossible() {
-		if(root.game.canMake(wantUnit, building) == false)
+		if(root.game.canMake(building, wantUnit) == false)
 			return false;
 		if(building.isTraining())
 			return false;

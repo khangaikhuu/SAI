@@ -33,7 +33,7 @@ public class Upgrade extends Task {
 
 	@Override
 	public boolean checkPossible() {
-		if(root.game.canUpgrade(upgradeType, building) == false)
+		if(root.game.canUpgrade(building, upgradeType) == false)
 			return false;
 		return true;
 	}

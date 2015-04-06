@@ -5,6 +5,7 @@ import information.GlobalConstant;
 import java.util.ArrayList;
 import java.util.List;
 
+import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 import task.BuildStruct;
@@ -85,8 +86,8 @@ public class ExpansionManager extends Component {
 					int whichBase = aliveMineralsBases.get(0);
 					for(Integer i : aliveMineralsBases)
 					{
-						double di = u.getDistance(root.info.bases[i].position.getX(), root.info.bases[i].position.getY());
-						double dWhich = u.getDistance(root.info.bases[whichBase].position.getX(), root.info.bases[whichBase].position.getY());
+						double di = u.getDistance(new Position(root.info.bases[i].position.getX(), root.info.bases[i].position.getY()));
+						double dWhich = u.getDistance(new Position(root.info.bases[whichBase].position.getX(), root.info.bases[whichBase].position.getY()));
 						if(di < dWhich)
 							whichBase = i;
 					}

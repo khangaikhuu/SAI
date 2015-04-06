@@ -198,8 +198,10 @@ public class Goal {
 		//setGoal(UnitType.Protoss_Carrier);
 		
 		upgrades = new ArrayList<UpgradeType>();
+		
 		// TODO: Add all Protoss upgrade!
 		upgrades.add(UpgradeType.Singularity_Charge);
+		upgrades.add(UpgradeType.Leg_Enhancements);
 		
 		wantUpgrades = new HashMap<UpgradeType, Integer>();
 		myUpgrades = new HashMap<UpgradeType, Integer>();
@@ -212,6 +214,7 @@ public class Goal {
 		}
 		
 		addPrerequestOfUpgrade(UpgradeType.Singularity_Charge, UnitType.Protoss_Cybernetics_Core);
+		addPrerequestOfUpgrade(UpgradeType.Leg_Enhancements, UnitType.Protoss_Citadel_of_Adun);
 	}
 
 	public int getGoal(UpgradeType ut)

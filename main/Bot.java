@@ -1,6 +1,5 @@
 package main;
 import bwapi.*;
-import bwapi.Text.Size.Enum;
 import bwta.BWTA;
 import gui.GUIManager;
 import headquarter.EconomyHQ;
@@ -158,6 +157,17 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onFrame() {
     	
+    	/*
+    	 * TODO:
+    	 * 1. Re analyze map when find enemy
+    	 * 2. RepairManager
+    	 * 3. Scout for enemy bases
+    	 * 4. Map analyze
+    	 * 5. Army Control
+    	 * 6. Add micro
+    	 * 7. Reaver, high-templar
+    	 */
+    	
     	guiManager.onFrameStart();
     	
     	if(isFirstFrame)
@@ -197,7 +207,7 @@ public class Bot extends DefaultBWListener {
     		if(info.getTask(u) != null)
     			if(info.getTask(u).creator != null)
     			{
-    				game.setTextSize(Enum.Default);
+    				game.setTextSize(8);
     				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 10, info.getTask(u).getName());
     				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 25, info.getTask(u).creator.getName());
     			}

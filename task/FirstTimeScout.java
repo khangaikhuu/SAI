@@ -41,11 +41,11 @@ public class FirstTimeScout extends Task{
 				return;
 			
 			Position p = root.enemyInfo.possibleStartPositions[currentIndex];
-			if(worker.getTargetPosition() != null && worker.getTargetPosition().getDistance(p.getX(), p.getY()) > 0)
+			if(worker.getTargetPosition() != null && worker.getTargetPosition().getDistance(new Position(p.getX(), p.getY())) > 0)
 			{
 				worker.move(p);
 			}
-			if(worker.getDistance(p.getX(), p.getY()) < 32 * 5)
+			if(worker.getDistance(new Position(p.getX(), p.getY())) < 32 * 5)
 			{
 				currentIndex ++;
 				if(currentIndex >= root.enemyInfo.possibleStartPositions.length)
@@ -95,6 +95,8 @@ public class FirstTimeScout extends Task{
 		
 		if(root.info.getUnitInfo(worker).destroy)
 		{
+			if(root.enemyInfo.startPoint == null)
+				root.enemyInfo.startPoint = root.enemyInfo.possibleStartPositions[currentIndex];
 			state = TaskState.FAILED;
 			root.info.setTask(worker, null);
 		}

@@ -18,6 +18,8 @@ public class BaseInfo {
 	public GatherResource gatherResourceTask;
 	public BaseLocation baseLocation;
 	public boolean canWalkTo;
+	public double distToMe;
+	public double distToEnemy;
 	public BuildingArea buildingArea;
 	
 	public List<Unit> minerals; // existing even destroy

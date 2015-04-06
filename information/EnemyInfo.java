@@ -37,6 +37,7 @@ public class EnemyInfo {
 	
 	public Position startPoint;
 	public Position[] possibleStartPositions;
+	public boolean visitedStartPoint;
 	
 	
 	public int getKilledUnitByType(UnitType ut)
@@ -102,6 +103,7 @@ public class EnemyInfo {
 		unitInfo = new EnemyUnitInfo[information.GlobalConstant.MAX_UNIT];
 		enemyDeadUnit = new HashMap<UnitType, Integer>();
 		allUnitType = new HashSet<UnitType>();
+		visitedStartPoint = false;
 	}
 	
 	int n;
@@ -146,6 +148,32 @@ public class EnemyInfo {
 			if(root.util.isCombatUnit(getUnitInfo(u).unitType))
 				ret.add(getUnitInfo(u));
 		}
+		return ret;
+	}
+	
+	public boolean getEnemyHaveBase()
+	{
+		for(Unit u : enemies)
+			if(root.util.isBase(getUnitInfo(u).unitType))
+				return true;
+		return false;
+	}
+	
+	public List<EnemyUnitInfo> getEnemyBase()
+	{
+		List <EnemyUnitInfo> ret = new ArrayList<EnemyInfo.EnemyUnitInfo>();
+		for(Unit u : enemies)
+			if(root.util.isBase(getUnitInfo(u).unitType))
+				ret.add(getUnitInfo(u));
+		return ret;
+	}
+	
+	public List<EnemyUnitInfo> getEnemyBuildings()
+	{
+		List <EnemyUnitInfo> ret = new ArrayList<EnemyInfo.EnemyUnitInfo>();
+		for(Unit u : enemies)
+			if(getUnitInfo(u).unitType.isBuilding())
+				ret.add(getUnitInfo(u));
 		return ret;
 	}
 	
@@ -211,6 +239,7 @@ public class EnemyInfo {
 		enemies = nextEnemies;
 		
 		enemiesByType = new HashMap<UnitType, List<Unit>>();
+		
 		for(Unit u : enemies)
 		{
 			UnitType ut = getUnitInfo(u).unitType;
@@ -232,14 +261,18 @@ public class EnemyInfo {
 			root.guiManager.addDebugInfo(s);
 		}
 		
-		for(int i = 0; i < n-1; i++)
+		if(visitedStartPoint == false && startPoint != null)
 		{
-			root.game.drawLineMap(possibleStartPositions[i], possibleStartPositions[i+1], new Color(0, 255, 0));
+			for(Unit u : root.info.getMyUnits())
+			{
+				if(u.getDistance(startPoint) < 32 * 7)
+					visitedStartPoint = true;
+			}
 		}
 		
-		
-		
+		for(int i = 0; i < n-1; i++)
+		{
+			//root.game.drawLineMap(possibleStartPositions[i].getX(), possibleStartPositions[i].getY(), possibleStartPositions[i+1].getX(), possibleStartPositions[i+1].getY(), new Color(0, 255, 0));
+		}
 	}
-	
-	
 }

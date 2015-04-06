@@ -81,7 +81,7 @@ public class GatherResource extends Task {
 				{
 					if(root.game.getFrameCount() - root.info.getUnitInfo(u).lastCommandFrame > 50)
 					{
-						u.attack(new PositionOrUnit(u.getPosition()));
+						u.attack(u.getPosition());
 						root.info.getUnitInfo(u).lastCommandFrame = root.game.getFrameCount();
 					}
 				}
@@ -94,7 +94,7 @@ public class GatherResource extends Task {
 			for(int i = 0; i < workerForMinearals.size(); i++)
 			{
 				Unit u = workerForMinearals.get(i);
-				if(u.getShields() > 5)
+				if(u.getShields() > 15)
 				{
 					if(workerForMinearals.get(i).isGatheringMinerals())
 					{
@@ -113,15 +113,11 @@ public class GatherResource extends Task {
 				{
 					if(root.game.getFrameCount() - root.info.getUnitInfo(u).lastCommandFrame > 50)
 					{
-						u.attack(new PositionOrUnit(u.getPosition()));
+						u.attack(u.getPosition());
 						root.info.getUnitInfo(u).lastCommandFrame = root.game.getFrameCount();
 					}
 				}
 			}
-		
-		
-
-		
 	}
 	
 	@Override

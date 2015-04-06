@@ -9,6 +9,6 @@ public class GlobalConstant {
 	public static final int Building_Area_X_OtherBase = 20;
 	public static final int Building_Area_Y_OtherBase = 20;
 	public static final double Building_Worker_distance = 33.0;
-	public static final double Squad_Radius = 320;
+	public static final double Squad_Radius = 500;
 	
 }

@@ -1,10 +1,11 @@
 package strategy;
 
+import bwapi.UnitType;
 import main.Bot;
 
-public class ProtossVersusTerran extends Strategy {
+public class ProtossVersusProtoss extends Strategy {
 
-	public ProtossVersusTerran(Bot r) {
+	public ProtossVersusProtoss(Bot r) {
 		super(r);
 	}
 	
@@ -14,30 +15,27 @@ public class ProtossVersusTerran extends Strategy {
 	public void onFrame() {
 		
 		if(currentOpening == null)
-			currentOpening = new CyberneticsCoreOpening(root);
+			currentOpening = new TwoGatewayOpening(root);
 		if(currentOpening.ended())
 		{
-			if(currentOpening.getName() == "CyberneticsCoreOpening")
+			if(currentOpening.getName() == "TwoGatewayOpening")
 			{
 				currentOpening = new ThreeGatewayDragoon(root);
-				
-				
-				
 			}
-			
-			
 		}
 		else
 		{
 			currentOpening.onFrame();
 		}
 		
-		if(root.self.supplyUsed() >= 50 * 2)
+		if(root.self.supplyUsed() >= 90 * 2)
 			root.blackboard.setNumberOfBaseAtLesst(2);
-		if(root.self.supplyUsed() >= 100 * 2)
+		if(root.self.supplyUsed() >= 120 * 2)
 			root.blackboard.setNumberOfBaseAtLesst(3);
-		if(root.self.supplyUsed() >= 150 * 2)
+		if(root.self.supplyUsed() >= 160 * 2)
 			root.blackboard.setNumberOfBaseAtLesst(4);
+		
+		
 		
 	}
 
@@ -49,7 +47,7 @@ public class ProtossVersusTerran extends Strategy {
 
 	@Override
 	public String getName() {
-		return "ProtossVersusTerran";
+		return "ProtossVersusProtoss";
 	}
 
 }

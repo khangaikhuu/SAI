@@ -13,6 +13,17 @@ public class GlobalVariables {
 	boolean haveGasBuilding;
 	
 	int numberOfBase;
+	boolean isEndingGame;
+	
+	public boolean getIsEndingGame()
+	{
+		return isEndingGame;
+	}
+	
+	public void setIsEndingGame(boolean b)
+	{
+		isEndingGame = b;
+	}
 	
 	public boolean getHaveGasBuilding()
 	{
@@ -80,8 +91,6 @@ public class GlobalVariables {
 	
 	public GlobalVariables(Bot r) {
 		root = r;
-		
-		
 	}
 	
 	public void onFirstFrame()
@@ -91,6 +100,7 @@ public class GlobalVariables {
 		firstTimeScout = false;
 		isAttacking = false;
 		haveGasBuilding = false;
+		isEndingGame = false;
 	}
 	
 }
