@@ -42,7 +42,9 @@ public class GatherResource extends Task {
 	@Override
 	public void onFrame() {
 		
-		//TODO: what if these probe dead?
+		workerForGas = root.util.removeDead(workerForGas);
+		workerForMinearals = root.util.removeDead(workerForMinearals);
+		
 		
 		if(base.gasStation.size() > 0 && base.gasStation.get(0).isBeingConstructed() == false)
 		{
@@ -60,7 +62,7 @@ public class GatherResource extends Task {
 			for(int i = 0; i < workerForGas.size(); i++)
 			{
 				Unit u = workerForGas.get(i);
-				if(u.getShields() > 5)
+				if(u.getShields() > 15)
 				{
 					if(workerForGas.get(i).isGatheringGas())
 					{

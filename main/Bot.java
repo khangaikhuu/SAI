@@ -106,7 +106,7 @@ public class Bot extends DefaultBWListener {
         self = game.self();
         enemy = game.enemies().get(0);
         
-        game.setLocalSpeed(0);
+        //game.setLocalSpeed(0);
         game.enableFlag(1);
         
         util = new General(this);
@@ -212,6 +212,24 @@ public class Bot extends DefaultBWListener {
     				game.drawTextMap(u.getPosition().getX() + 10, u.getPosition().getY() + 25, info.getTask(u).creator.getName());
     			}
     	}
+    	
+    	/*
+    	int x = (game.getMousePosition().getX() + game.getScreenPosition().getX() + 16) / 32;
+    	int y = (game.getMousePosition().getY() + game.getScreenPosition().getY() + 16) / 32;
+    	int L = 10;
+    	
+    	for(int i = Math.max(0, x - L); i <= Math.min(x + L, game.mapWidth()-1); i++)
+    		for(int j = Math.max(0, y - L); j <= Math.min(y + L, game.mapHeight()-1); j++)
+    		{
+    			Position p = util.getMyFirstBasePosition();
+    			//int d = BWTA.getGroundDistance(new TilePosition(, arg1), arg1)
+    			//if(game.isWalkable(i, j))
+    				game.drawBoxMap(i*32+2, j*32+2, i*32+30, j*32+30, new Color(0, 255, 0));
+    			//else
+    				//game.drawBoxMap(i*32+2, j*32+2, i*32+30, j*32+30, new Color(255, 0, 0));
+    		}
+    	*/
+    	
     	
     }
     

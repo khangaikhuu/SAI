@@ -95,7 +95,7 @@ public class GlobalVariables {
 	
 	public void onFirstFrame()
 	{
-		setAttackPosition(root.info.bases[1].position);
+		setAttackPosition(root.info.bases[0].position);
 		numberOfBase = 1;
 		firstTimeScout = false;
 		isAttacking = false;

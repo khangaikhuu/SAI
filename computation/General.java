@@ -2,6 +2,7 @@ package computation;
 
 import information.EnemyInfo.EnemyUnitInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import task.Task;
@@ -33,14 +34,11 @@ public class General {
 		{
 			ret += u.unitType.supplyRequired();
 			if(u.unitType == UnitType.Protoss_Photon_Cannon)
-				ret += 6;
+				ret += 5;
 			if(u.unitType == UnitType.Terran_Bunker)
-				ret += 16;
+				ret += 13;
 			if(u.unitType == UnitType.Zerg_Sunken_Colony)
 				ret += 8;
-			
-			
-			
 		}
 		return ret;
 	}
@@ -130,6 +128,18 @@ public class General {
 			return new Position(buildPosition.getX() * 32 - 16, buildPosition.getY() * 32 - 16);
 		return new Position(buildPosition.getX() * 32 + targetStruct.tileWidth() * 16 ,
 				            buildPosition.getY() * 32 + targetStruct.tileHeight() * 16);
+	}
+	
+	public List<Unit> removeDead(List <Unit> lis)
+	{
+		List <Unit>  ret = new ArrayList<Unit>();
+		for(Unit u : lis)
+		{
+			if(root.info.getUnitInfo(u).destroy)
+				continue;
+			ret.add(u);
+		}
+		return ret;
 	}
 	
 	

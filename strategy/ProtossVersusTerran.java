@@ -15,6 +15,7 @@ public class ProtossVersusTerran extends Strategy {
 		
 		if(currentOpening == null)
 			currentOpening = new CyberneticsCoreOpening(root);
+		
 		if(currentOpening.ended())
 		{
 			if(currentOpening.getName() == "CyberneticsCoreOpening")

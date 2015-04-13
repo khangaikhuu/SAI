@@ -42,7 +42,7 @@ public class BaseManager extends Component {
 			
 			int myProbes = root.util.countUnit(UnitType.Protoss_Probe, true, true, true);
 			
-			int myProbesNeed = Math.min(80, root.blackboard.getNumberOfBase() + 1) * 27;
+			int myProbesNeed = Math.min(80, root.blackboard.getNumberOfBase() * 27 + 10) ;
 			
 			if(b.isTraining() == false && myProbes < myProbesNeed)
 			{

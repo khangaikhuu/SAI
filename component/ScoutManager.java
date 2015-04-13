@@ -31,9 +31,9 @@ public class ScoutManager extends Component {
 		
 		if(firstTimeScout == false && root.blackboard.getFirstTimeScout())
 		{
-			firstTimeScout = true;
 			FirstTimeScout task = new FirstTimeScout(root);
-			makeProposal(task);
+			if(makeProposal(task))
+				firstTimeScout = true;
 		}
 		
 	}

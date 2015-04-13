@@ -55,6 +55,7 @@ public class FirstTimeScout extends Task{
 		}
 		else
 		{
+			
 			double cx = root.enemyInfo.startPoint.getX();
 			double cy = root.enemyInfo.startPoint.getY();
 			double T = 23 * 30, R = 32 * 10;

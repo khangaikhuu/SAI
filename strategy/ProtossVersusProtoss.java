@@ -1,6 +1,5 @@
 package strategy;
 
-import bwapi.UnitType;
 import main.Bot;
 
 public class ProtossVersusProtoss extends Strategy {
