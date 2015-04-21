@@ -15,6 +15,19 @@ public class GlobalVariables {
 	int numberOfBase;
 	boolean isEndingGame;
 	
+	double front;
+	double front_want;
+	
+	public double getFront()
+	{
+		return front;
+	}
+	
+	public void setFront(double t)
+	{
+		front_want = t;
+	}
+	
 	public boolean getIsEndingGame()
 	{
 		return isEndingGame;
@@ -101,6 +114,17 @@ public class GlobalVariables {
 		isAttacking = false;
 		haveGasBuilding = false;
 		isEndingGame = false;
+		front = 40;
+		front_want = 40;
+	}
+	
+	public void onFrame()
+	{
+		if(front < front_want)
+			front = Math.min(front + 0.1, front_want);
+		if(front > front_want)
+			front = Math.max(front - 0.2, front_want);
+		
 	}
 	
 }

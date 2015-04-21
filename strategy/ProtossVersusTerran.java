@@ -1,5 +1,6 @@
 package strategy;
 
+import bwapi.UnitType;
 import main.Bot;
 
 public class ProtossVersusTerran extends Strategy {
@@ -21,9 +22,6 @@ public class ProtossVersusTerran extends Strategy {
 			if(currentOpening.getName() == "CyberneticsCoreOpening")
 			{
 				currentOpening = new ThreeGatewayDragoon(root);
-				
-				
-				
 			}
 			
 			
@@ -31,6 +29,11 @@ public class ProtossVersusTerran extends Strategy {
 		else
 		{
 			currentOpening.onFrame();
+		}
+		
+		if(root.self.supplyUsed() >= 60 * 2)
+		{
+			root.goal.setGoal(UnitType.Protoss_Observer, 2);
 		}
 		
 		if(root.self.supplyUsed() >= 50 * 2)

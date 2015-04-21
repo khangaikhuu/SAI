@@ -1,16 +1,23 @@
 package main;
 import bwapi.*;
 import bwta.BWTA;
+import bwta.BaseLocation;
+import bwta.Region;
 import gui.GUIManager;
 import headquarter.EconomyHQ;
 import headquarter.HQ;
 import headquarter.StrategyHQ;
+import information.AllMapInfo;
 import information.EnemyInfo;
 import information.GameInfo;
 import information.GlobalVariables;
 import information.Goal;
+import information.PathInfo;
 
+import java.io.PrintWriter;
 import java.util.*;
+
+import javax.swing.RootPaneContainer;
 
 import strategy.Strategy;
 import task.Task;
@@ -42,6 +49,7 @@ public class Bot extends DefaultBWListener {
     public information.Goal goal;
     public Strategy strategy;
     public GlobalVariables blackboard;
+    public AllMapInfo allMapInfo;
     
     // HQ
     public List <HQ> listOfHQ;
@@ -106,8 +114,9 @@ public class Bot extends DefaultBWListener {
         self = game.self();
         enemy = game.enemies().get(0);
         
-        //game.setLocalSpeed(0);
+        game.setLocalSpeed(0);
         game.enableFlag(1);
+        
         
         util = new General(this);
         info = new GameInfo(this);
@@ -116,6 +125,7 @@ public class Bot extends DefaultBWListener {
         taskManager = new TaskManager(this);
         goal = new Goal(this);
         blackboard = new GlobalVariables(this);
+        allMapInfo = new AllMapInfo(this);
         
         listOfHQ = new ArrayList<HQ>();
         listOfComponents = new ArrayList<Component>();
@@ -154,6 +164,10 @@ public class Bot extends DefaultBWListener {
         System.out.println("Map data ready");
     }
     
+    
+    
+    
+    
     @Override
     public void onFrame() {
     	
@@ -173,13 +187,16 @@ public class Bot extends DefaultBWListener {
     	if(isFirstFrame)
     	{
     		isFirstFrame = false;
-    		info.updateBasesFirstFrame();
+    		info.onFirstFrame();
     		enemyInfo.onFirstFrame();
     		blackboard.onFirstFrame();
+    		allMapInfo.onFirstFrame();
     	}
     	
     	info.onFrameStart();
     	enemyInfo.onFrame();
+    	blackboard.onFrame();
+    	allMapInfo.onFrame();
     	
     	taskManager.onFrameStart();
     	for(Component c : listOfComponents)
@@ -213,22 +230,14 @@ public class Bot extends DefaultBWListener {
     			}
     	}
     	
-    	/*
-    	int x = (game.getMousePosition().getX() + game.getScreenPosition().getX() + 16) / 32;
-    	int y = (game.getMousePosition().getY() + game.getScreenPosition().getY() + 16) / 32;
-    	int L = 10;
+    	int x = (game.getMousePosition().getX() + game.getScreenPosition().getX()) / 32;
+    	int y = (game.getMousePosition().getY() + game.getScreenPosition().getY()) / 32;
     	
-    	for(int i = Math.max(0, x - L); i <= Math.min(x + L, game.mapWidth()-1); i++)
-    		for(int j = Math.max(0, y - L); j <= Math.min(y + L, game.mapHeight()-1); j++)
-    		{
-    			Position p = util.getMyFirstBasePosition();
-    			//int d = BWTA.getGroundDistance(new TilePosition(, arg1), arg1)
-    			//if(game.isWalkable(i, j))
-    				game.drawBoxMap(i*32+2, j*32+2, i*32+30, j*32+30, new Color(0, 255, 0));
-    			//else
-    				//game.drawBoxMap(i*32+2, j*32+2, i*32+30, j*32+30, new Color(255, 0, 0));
-    		}
-    	*/
+    	if(info.bases[info.bases.length-1].pathFromMyBase != null)
+    	{
+    		info.bases[info.bases.length-1].pathFromMyBase.display();
+    	}
+    	
     	
     	
     }

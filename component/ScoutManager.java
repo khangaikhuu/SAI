@@ -1,16 +1,19 @@
 package component;
 
+import task.AllMapScout;
 import task.FirstTimeScout;
 import main.Bot;
 
 public class ScoutManager extends Component {
 	
 	boolean firstTimeScout;
+	boolean allMapScout;
 	
 	public ScoutManager(Bot r) {
 		super(r);
 		
 		firstTimeScout = false;
+		allMapScout = false;
 	}
 	
 	@Override
@@ -34,6 +37,13 @@ public class ScoutManager extends Component {
 			FirstTimeScout task = new FirstTimeScout(root);
 			if(makeProposal(task))
 				firstTimeScout = true;
+		}
+		
+		if(allMapScout == false)
+		{
+			AllMapScout task = new AllMapScout(root);
+			if(makeProposal(task))
+				allMapScout = true;
 		}
 		
 	}

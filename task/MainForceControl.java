@@ -1,22 +1,24 @@
 package task;
 
+import information.PathInfo;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import bwapi.Color;
+import bwapi.Game;
 import bwapi.Position;
-import bwapi.PositionOrUnit;
 import bwapi.Unit;
 import bwapi.UnitType;
 import main.Bot;
 
 public class MainForceControl extends Task {
 
-	List <Unit> zealots;
+	List <Unit> soldier;
 	
 	public MainForceControl(Bot r) {
 		super(r);
-		zealots = new ArrayList<Unit>();
+		soldier = new ArrayList<Unit>();
 		
 	}
 	
@@ -26,34 +28,40 @@ public class MainForceControl extends Task {
 		return "MainForceControl";
 	}
 	
+	
+	
 	@Override
 	public void onFrame() {
 		root.guiManager.addDebugInfo("Attack!");
 		root.game.drawCircleMap(root.blackboard.getAttackPosition().getX(), root.blackboard.getAttackPosition().getY(), (int)information.GlobalConstant.Squad_Radius, new Color(255, 0, 0));
 		
+		// remove dead soldier
 		ArrayList<Unit> t = new ArrayList<Unit>();
-		for(Unit u : zealots)
+		for(Unit u : soldier)
 		{
 			if(root.info.getUnitInfo(u).destroy)
 				continue;
 			t.add(u);
 		}
-		zealots = t;
+		soldier = t;
+		
+		// get new soldier
 		for(UnitType ut : root.goal.armyUnit)
 		{
+			if(root.util.isCombatUnit(ut) == false) continue;
 			if(root.info.myUnits.get(ut) != null)
 				for(Unit u : root.info.myUnits.get(ut))
 					if(root.info.canStartNewTask(u))
 					{
 						root.info.getUnitInfo(u).currentTask = this;
-						zealots.add(u);
+						soldier.add(u);
 					}
 		}
 		
-		
+		// ending game
 		if(root.blackboard.getIsEndingGame())
 		{
-			for(int i = 0; i < zealots.size(); i++)
+			for(int i = 0; i < soldier.size(); i++)
 			{
 				Position p = null;
 				if(root.enemyInfo.getEnemyBuildings().size() > 0)
@@ -64,22 +72,26 @@ public class MainForceControl extends Task {
 				{
 					p = root.info.bases[i % root.info.bases.length].position;
 				}
-				if(root.game.getFrameCount() - root.info.getUnitInfo(zealots.get(i)).lastCommandFrame > 50)
+				if(root.game.getFrameCount() - root.info.getUnitInfo(soldier.get(i)).lastCommandFrame > 50)
 				{
-					root.info.getUnitInfo(zealots.get(i)).lastCommandFrame = root.game.getFrameCount();
-					zealots.get(i).attack(p);
+					root.info.getUnitInfo(soldier.get(i)).lastCommandFrame = root.game.getFrameCount();
+					soldier.get(i).attack(p);
 				}
 			}
 		}
 		else
 		{
-			for(Unit u : zealots)
+			for(Unit u : soldier)
 			{
+				if(root.info.bases[root.info.bases.length-1].pathFromMyBase == null)
+					continue;
+				PathInfo pi = root.info.bases[root.info.bases.length-1].pathFromMyBase;
+				Position p = new Position(pi.distToPosition(root.blackboard.getFront()).getX() * 32 + 16, pi.distToPosition(root.blackboard.getFront()).getY() * 32 + 16);
 				
+				int x = p.getX();
+				int y = p.getY();
 				
-				int x = root.guiManager.attackPosition.x;
-				int y = root.guiManager.attackPosition.y;
-				if(u.getDistance(new Position(x,  y)) > information.GlobalConstant.Squad_Radius && root.blackboard.getIsAttacking() == false)
+				if(u.getDistance(new Position(x,  y)) > 4 * 32 && root.blackboard.getIsAttacking() == false)
 				{
 					if(root.game.getFrameCount() % 40 == 0)
 						u.move(new Position(x, y));
@@ -173,19 +185,19 @@ public class MainForceControl extends Task {
 	@Override
 	public List<Unit> requestUnit(UnitType requestUnit, int numberNeeded) {
 		List<Unit> ret = new ArrayList<Unit>();
-		List <Unit> nextZealots = new ArrayList<Unit>();
-		for(int i = 0; i < zealots.size(); i++)
+		List <Unit> nextsoldier = new ArrayList<Unit>();
+		for(int i = 0; i < soldier.size(); i++)
 		{
-			if(numberNeeded > 0 && zealots.get(i).getType() == requestUnit)
+			if(numberNeeded > 0 && soldier.get(i).getType() == requestUnit)
 			{
 				numberNeeded --;
-				ret.add(zealots.get(i));
-				root.info.setTask(zealots.get(i), null);
+				ret.add(soldier.get(i));
+				root.info.setTask(soldier.get(i), null);
 			}
 			else
-				nextZealots.add(zealots.get(i));
+				nextsoldier.add(soldier.get(i));
 		}
-		zealots = nextZealots;
+		soldier = nextsoldier;
 		return ret;
 	}
 	

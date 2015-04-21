@@ -31,6 +31,8 @@ public class BaseInfo {
 	public Unit[] avaliableMineralsUnit;
 	boolean reservedBase;
 	
+	public PathInfo pathFromMyBase;
+	
 	public BaseInfo(Bot r) {
 		root = r;
 		minerals = new ArrayList<Unit>();

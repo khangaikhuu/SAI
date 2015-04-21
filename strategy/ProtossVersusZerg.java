@@ -19,7 +19,7 @@ public class ProtossVersusZerg extends Strategy {
 		{
 			if(currentOpening.getName() == "TwoGatewayOpening")
 			{
-				currentOpening = new ThreeGatewayDragoon(root);
+				currentOpening = new OneBaseReaver(root);
 				
 				
 				
@@ -32,12 +32,13 @@ public class ProtossVersusZerg extends Strategy {
 			currentOpening.onFrame();
 		}
 		
+		/*
 		if(root.self.supplyUsed() >= 50 * 2)
 			root.blackboard.setNumberOfBaseAtLesst(2);
 		if(root.self.supplyUsed() >= 100 * 2)
 			root.blackboard.setNumberOfBaseAtLesst(3);
 		if(root.self.supplyUsed() >= 150 * 2)
-			root.blackboard.setNumberOfBaseAtLesst(4);
+			root.blackboard.setNumberOfBaseAtLesst(4);*/
 		
 	}
 

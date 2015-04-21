@@ -5,6 +5,7 @@ import information.EnemyInfo.EnemyUnitInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+import strategy.ProtossVersusProtoss;
 import task.Task;
 import bwapi.*;
 import main.Bot;
@@ -17,12 +18,37 @@ public class General {
 		root = r;
 	}
 	
+	public List <Unit> filterInRange(List <Unit> lis, Position p, int R)
+	{
+		List <Unit> ret = new ArrayList<Unit>();
+		for(Unit u : lis)
+		{
+			if(u.getDistance(p) > R) continue;
+			ret.add(u);
+		}
+		return ret;
+	}
+	
+	public List <EnemyUnitInfo> filterInRangeEnemy(List <EnemyUnitInfo> lis, Position p, int R)
+	{
+		List <EnemyUnitInfo> ret = new ArrayList<EnemyUnitInfo>();
+		for(EnemyUnitInfo u : lis)
+		{
+			if(u.lastPosition.getDistance(p) > R) continue;
+			ret.add(u);
+		}
+		return ret;
+	}
+	
 	public double computePower(List <Unit> lis)
 	{
 		double ret = 0;
 		for(Unit u : lis)
 		{
-			ret += u.getType().supplyRequired();
+			if(u.getType() == UnitType.Protoss_Reaver)
+				ret += 6 * 2;
+			else
+				ret += u.getType().supplyRequired();
 		}
 		return ret;
 	}
@@ -99,6 +125,8 @@ public class General {
 	public boolean isCombatUnit(UnitType t)
 	{
 		if(t == UnitType.Terran_Bunker) return true;
+		if(t == UnitType.Protoss_Observer) return true;
+		if(t == UnitType.Protoss_Reaver) return false;
 		
 		if(t.canAttack() == true && t.isWorker() == false)
 			return true;

@@ -9,51 +9,37 @@ import bwapi.UpgradeType;
 import bwapi.Utils;
 import main.Bot;
 
-public class ThreeGatewayDragoon extends Strategy {
-
+public class OneBaseReaver extends Strategy {
+	
 	double displayR;
 	
-	public ThreeGatewayDragoon(Bot r) {
+	public OneBaseReaver(Bot r) {
 		super(r);
 		displayR = 0;
 	}
-	
-	
-	
+
 	@Override
 	public void onFrame() {
 		
-		if(root.info.getReadyBases() == 1)
+		root.goal.setGoalAtleast(UnitType.Protoss_Gateway, 2);
+		root.goal.setGoalAtleast(UnitType.Protoss_Zealot, 10);
+		root.goal.setGoalAtleast(UnitType.Protoss_Dragoon, 10);
+		root.goal.setGoal(UpgradeType.Singularity_Charge);
+		root.goal.setGoal(UnitType.Protoss_Shuttle);
+		root.goal.setGoal(UnitType.Protoss_Reaver);
+		root.goal.setGoal(UpgradeType.Gravitic_Drive);
+		
+		if(root.util.countUnit(UnitType.Protoss_Reaver, true, true, true) > 0)
 		{
-			if(root.util.countUnit(UnitType.Protoss_Zealot, false, false, true) >= 1)
-				root.goal.setGoalAtleast(UnitType.Protoss_Gateway, 2);
-			
+			int n = root.util.countUnit(UnitType.Protoss_Reaver, true, true, true);
+			root.goal.setGoalAtleast(UnitType.Protoss_Reaver, n + 1);
+			root.goal.setGoalAtleast(UnitType.Protoss_Shuttle, n + 1);
+			root.goal.setGoalAtleast(UnitType.Protoss_Robotics_Facility, 2);
+			root.goal.setGoalAtleast(UnitType.Protoss_Observer, 2);
 			root.goal.setGoalAtleast(UnitType.Protoss_Gateway, 3);
-			
-			root.goal.setGoalAtleast(UnitType.Protoss_Zealot, Math.min(12, root.enemyInfo.getEnemyUnitByType(UnitType.Protoss_Zealot).size() + 1));
-			
-			if(root.enemy.getRace() == Race.Protoss)
-			{
-				if(root.util.countUnit(UnitType.Protoss_Zealot, false, false, true) >= root.enemyInfo.getEnemyUnitByType(UnitType.Protoss_Zealot).size())
-				{
-					root.goal.setGoalAtleast(UnitType.Protoss_Dragoon, 50);
-					root.goal.setGoal(UpgradeType.Singularity_Charge);
-				}
-			}
-			else
-			{
-				root.goal.setGoalAtleast(UnitType.Protoss_Dragoon, 50);
-				root.goal.setGoal(UpgradeType.Singularity_Charge);
-			}
 		}
 		
-		if(root.info.getReadyBases() >= 2)
-		{
-			root.goal.setGoalAtleast(UnitType.Protoss_Zealot, 20);
-			root.goal.setGoalAtleast(UnitType.Protoss_Dragoon, 20);
-			root.goal.setGoal(UpgradeType.Leg_Enhancements);
-			root.goal.setGoalAtleast(UnitType.Protoss_Gateway, 3 * root.info.getReadyBases());
-		}
+		
 		
 		// Ending game
 		if(root.self.supplyUsed() >= 50 * 2 && root.enemyInfo.getEnemyHaveBase() == false && root.enemyInfo.visitedStartPoint == true)
@@ -118,7 +104,7 @@ public class ThreeGatewayDragoon extends Strategy {
 		}
 	
 		
-			
+		
 	}
 
 	@Override
@@ -129,8 +115,7 @@ public class ThreeGatewayDragoon extends Strategy {
 
 	@Override
 	public String getName() {
-		
-		return "ThreeGatewayDragoon";
+		return "OneBaseReaver";
 	}
 
 }

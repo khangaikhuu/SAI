@@ -41,7 +41,7 @@ public class GUIManager {
 	
 	public void onFrameEnd()
 	{
-    	root.game.setTextSize(8);
+    	root.game.setTextSize(6);
         int startX = 12;
         int startY = 12;
         for (String s : debugInfo)

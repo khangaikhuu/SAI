@@ -35,6 +35,8 @@ public class GameInfo {
 	public BaseInfo[] bases;
 	
 	boolean reOrderBases;
+	public boolean[][] walkable;
+	
 	
 	private boolean betterThan(BaseInfo a, BaseInfo b) {
 		
@@ -105,6 +107,26 @@ public class GameInfo {
 		
 		
 		return (distAEnemy > distBEnemy);
+	}
+	
+	public void onFirstFrame()
+	{
+		updateBasesFirstFrame();
+		if(walkable == null)
+    	{
+    		walkable = new boolean[root.game.mapWidth()][root.game.mapHeight()];
+    		
+    		for(int i = 0; i < root.game.mapWidth(); i++)
+    			for(int j = 0; j < root.game.mapHeight(); j++)
+    			{
+    				boolean ok = true;
+        			for(int dx = 0; dx < 4; dx ++)
+        				for(int dy = 0; dy < 4; dy ++)
+        					if(!root.game.isWalkable(i * 4 + dx, j * 4 + dy))
+        						ok = false;
+        			walkable[i][j] = ok;
+    			}
+    	}
 	}
 	
 	public void updateBasesFirstFrame()
@@ -261,6 +283,10 @@ public class GameInfo {
 					}
 			for(int i = 0; i < n; i++)
 				bases[i].baseID = i;
+			
+			PathInfo p = new PathInfo(root, bases[0].baseLocation.getTilePosition(), bases[n-1].baseLocation.getTilePosition());
+			if(p.positionOnPath != null && p.positionOnPath.size() > 0)
+				bases[n-1].pathFromMyBase = p;
 		}
 		
 		/*

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import task.Task;
 import task.TrainUnit;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -27,6 +28,7 @@ public class ArmyProductionManager extends Component {
 	
 	@Override
 	public void onFrame() {
+		
 		
 		//root.goal.setGoal(UnitType.Protoss_Gateway, 2);
 		//root.goal.setGoal(UnitType.Protoss_Robotics_Facility, 2);
